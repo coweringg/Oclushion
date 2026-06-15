@@ -31,7 +31,7 @@ export async function handleRepoScan(job: Job<JobPayloads["repo:scan"]>): Promis
     await job.updateProgress(100);
     return { status: "completed", filesScanned, durationMs };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    void error;
     return { status: "failed", filesScanned: 0, durationMs: Date.now() - start };
   }
 }

@@ -137,10 +137,10 @@ jobs:
           echo "PWD: $(pwd)"
           echo "ls .next/standalone:"
           ls -laR .next/standalone/ 2>&1 | head -40 || echo "(no .next/standalone)"
-          SERVER=$(find .next/standalone -name server.js -type f 2>/dev/null | head -1)
+          SERVER=$(find .next/standalone/apps/web -name server.js -type f 2>/dev/null | head -1)
           if [ -z "$SERVER" ]; then
-            echo "server.js not found — searching whole .next"
-            find .next -name "server.js" -type f 2>/dev/null | head -10
+            echo "server.js not found in .next/standalone/apps/web"
+            ls -laR .next/standalone/apps/web/ 2>&1 | head -10
             exit 1
           fi
           echo "Found server: $SERVER"

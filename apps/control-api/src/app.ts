@@ -16,7 +16,7 @@ import healthRoutes from "./routes/health.js";
 import internalRoutes from "./routes/internal.js";
 import metricsRoutes from "./routes/metrics.js";
 import scimRoutes from "./scim/scim.routes.js";
-import { marketplaceRoutes, marketplaceAdminRoutes } from "./routes/marketplace.js";
+import { marketplaceRoutes } from "./routes/marketplace.js";
 import { JobQueueService } from "./jobs/queue.service.js";
 import jobRoutes from "./routes/jobs.js";
 import type { ControlRepository } from "./storage/repository.js";

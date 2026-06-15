@@ -8,8 +8,6 @@ import type {
   OrganizationMemberSummary,
   BillingAccountSummary,
 } from "../src/storage/repository.js";
-import { RepositoryConflictError } from "../src/storage/repository.js";
-
 import type { FastifyInstance } from "fastify";
 
 const adminToken = "enterprise-test-admin-token-long-enough-32chars";
@@ -271,14 +269,6 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
       url: `/v1/orgs/${organizationId}/sso`,
     });
     expect(listRes.statusCode).toBe(401);
-
-    const loginRes = await app.inject({
-      method: "POST",
-      url: "/v1/auth/login",
-      payload: { email: "developer@oclushion.local", password: "password123" },
-    });
-    const cookie = loginRes.cookies?.[0];
-    const sessionHeader = cookie ? { cookie: `${cookie.name}=${cookie.value}` } : { authorization: "" };
 
     const authRes = await app.inject({
       method: "GET",

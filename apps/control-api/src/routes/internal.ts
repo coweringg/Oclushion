@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import { policyTargetModuleSchema } from "@oclushion/shared";

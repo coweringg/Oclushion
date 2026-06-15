@@ -109,7 +109,7 @@ export class SCIMService {
     return group;
   }
 
-  public async deleteGroup(groupId: string, orgId: string): Promise<void> {
+  public async deleteGroup(_groupId: string, _orgId: string): Promise<void> {
     return;
   }
 
@@ -147,7 +147,7 @@ export class SCIMService {
     };
   }
 
-  private toSCIMUser(user: DesktopAuthUser, orgId: string): SCIMUser {
+  private toSCIMUser(user: DesktopAuthUser, _orgId: string): SCIMUser {
     return {
       schemas: [SCIM_USER_SCHEMA_URI],
       id: user.userId,

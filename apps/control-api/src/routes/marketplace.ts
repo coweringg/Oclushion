@@ -244,5 +244,5 @@ function bumpVersion(version: string): string {
   return parts.join(".");
 }
 
-export async function marketplaceAdminRoutes(fastify: FastifyInstance) {
+export async function marketplaceAdminRoutes(_fastify: FastifyInstance) {
 }

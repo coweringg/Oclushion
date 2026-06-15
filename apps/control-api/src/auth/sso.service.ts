@@ -110,7 +110,7 @@ export class SSOService {
     };
   }
 
-  public async provisionUser(profile: SSOProfile, orgId: string): Promise<string> {
+  public async provisionUser(profile: SSOProfile, _orgId: string): Promise<string> {
     const existing = await this.repository.getDesktopAuthUserByEmail({ email: profile.email }).catch(() => null);
     if (existing) return existing.userId;
     const user = await this.repository.createDesktopAuthUser({

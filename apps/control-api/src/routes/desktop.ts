@@ -1,4 +1,4 @@
-import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
 
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import Stripe from "stripe";
@@ -257,17 +257,17 @@ const desktopRoutes: FastifyPluginAsync<{
     return { disabled: true };
   });
 
-  app.get("/v1/desktop/credits/balance", { preHandler: [requireAuth, requirePermission("billing:read")], schema: s(["Billing"], "Get credit balance for desktop", "desktopGetCreditBalance") }, async (request, reply) => {
+  app.get("/v1/desktop/credits/balance", { preHandler: [requireAuth, requirePermission("billing:read")], schema: s(["Billing"], "Get credit balance for desktop", "desktopGetCreditBalance") }, async (request, _reply) => {
     const session = (request as unknown as Record<string, unknown>).session as { organizationId: string };
     return options.repository.getCreditBalance({ organizationId: session.organizationId });
   });
 
-  app.get("/v1/desktop/spend-cap", { preHandler: [requireAuth, requirePermission("billing:read")], schema: s(["Billing"], "Get daily spend cap", "desktopGetSpendCap") }, async (request, reply) => {
+  app.get("/v1/desktop/spend-cap", { preHandler: [requireAuth, requirePermission("billing:read")], schema: s(["Billing"], "Get daily spend cap", "desktopGetSpendCap") }, async (request, _reply) => {
     const session = (request as unknown as Record<string, unknown>).session as { organizationId: string };
     return options.repository.getSpendCap({ organizationId: session.organizationId });
   });
 
-  app.put("/v1/desktop/spend-cap", { preHandler: [requireAuth, requirePermission("billing:manage")], schema: s(["Billing"], "Update daily spend cap", "desktopUpdateSpendCap") }, async (request, reply) => {
+  app.put("/v1/desktop/spend-cap", { preHandler: [requireAuth, requirePermission("billing:manage")], schema: s(["Billing"], "Update daily spend cap", "desktopUpdateSpendCap") }, async (request, _reply) => {
     const session = (request as unknown as Record<string, unknown>).session as { organizationId: string };
     const body = spendCapSchema.parse(request.body);
     return options.repository.updateSpendCap({
@@ -373,7 +373,7 @@ const desktopRoutes: FastifyPluginAsync<{
     if (!orgId) {
       return reply.code(400).send({ error: "Could not determine organization." });
     }
-    const userId = await ssoService.provisionUser(profile, orgId);
+    void await ssoService.provisionUser(profile, orgId);
     await options.repository.upsertOrganizationMember({
       organizationId: orgId,
       email: profile.email,
@@ -644,7 +644,6 @@ const desktopRoutes: FastifyPluginAsync<{
   });
 
   app.post("/v1/orgs/:organizationId/members", { preHandler: [requireAuth, requirePermission("member:invite")], schema: s(["Organizations"], "Add organization member", "addOrganizationMember") }, async (request, reply) => {
-    const session = getSession(request);
     const params = z.object({ organizationId: z.uuid() }).parse(request.params);
     const body = z.object({
       email: z.email(),
@@ -799,7 +798,6 @@ const desktopRoutes: FastifyPluginAsync<{
   });
 
   app.post("/v1/orgs/:organizationId/trial/start", { preHandler: [requireAuth, requirePermission("org:manage")], schema: s(["Organizations"], "Start free trial", "startTrial") }, async (request, reply) => {
-    const session = getSession(request);
     const params = z.object({ organizationId: z.uuid() }).parse(request.params);
 
     const trialService = new TrialService(options.repository);

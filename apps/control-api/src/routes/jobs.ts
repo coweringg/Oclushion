@@ -2,7 +2,7 @@ import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import { s } from "./schema-helpers.js";
 import { requirePermission } from "../auth/rbac.middleware.js";
-import { JobQueueService } from "../jobs/queue.service.js";
+import type { JobQueueService } from "../jobs/queue.service.js";
 
 const enqueueAgentSchema = z.object({
   agentId: z.string().min(1),

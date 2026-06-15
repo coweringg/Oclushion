@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import type { ControlRepository } from "../storage/repository.js";
@@ -16,6 +17,8 @@ import {
 const scimRoutes: FastifyPluginAsync<{ repository: ControlRepository }> = async (app, options) => {
   const scim = new SCIMService(options.repository);
 
+  const hashToken = (token: string): string => createHash("sha256").update(token).digest("hex");
+
   const requireOrg = async (request: { headers: Record<string, string | string[] | undefined> }): Promise<string> => {
     const auth = request.headers.authorization;
     if (typeof auth === "string" && auth.startsWith("Bearer ")) {
@@ -31,11 +34,6 @@ const scimRoutes: FastifyPluginAsync<{ repository: ControlRepository }> = async 
       return orgId;
     }
     throw { statusCode: 401, message: "Valid SCIM token or X-Organization-ID header required." };
-  };
-
-  const hashToken = (token: string): string => {
-    const { createHash } = require("node:crypto");
-    return createHash("sha256").update(token).digest("hex");
   };
 
   const scimError = (reply: any, status: number, detail: string, scimType?: string) => {
@@ -222,7 +220,7 @@ const scimRoutes: FastifyPluginAsync<{ repository: ControlRepository }> = async 
       const orgId = await requireOrg(request);
       const result = await scim.listGroups(orgId);
       return reply.send(result);
-    } catch (error: any) {
+    } catch (_error: any) {
       return scimError(reply, 500, "Internal error");
     }
   });
