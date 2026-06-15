@@ -2,16 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { createApp } from "../src/app.js";
 import type {
-  ControlRepository,
   CreateDesktopAuthUserInput,
   DesktopAuthUser,
   OrganizationMemberSummary,
   BillingAccountSummary,
-  ConnectorOAuthStartResult,
-  CreatedGatewayApiKey,
-  CreatedOrganization,
-  CreatedPolicySet,
-  DraftPolicyVersion,
 } from "../src/storage/repository.js";
 import type { FastifyInstance } from "fastify";
 

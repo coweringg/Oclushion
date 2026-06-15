@@ -149,6 +149,8 @@
     "model": "Model",
     "customModel": "Custom model...",
     "customModelPlaceholder": "gpt-5.5, claude-opus-4-8 or local/llama3",
+    "ollama": "Ollama (Local)",
+    "lmStudio": "LM Studio (Local)",
     "tokenMode": "Token Mode",
     "balanced": "Balanced",
     "maxSavings": "Max Savings",
