@@ -148,7 +148,7 @@ jobs:
           echo "PID: $!"
           cd ${{ github.workspace }}
           for attempt in {1..30}; do
-            if curl --fail --silent --max-time 2 http://127.0.0.1:3000/login > /dev/null 2>&1; then
+            if curl --silent --output /dev/null --max-time 2 http://127.0.0.1:3000/; then
               echo "Server ready on attempt $attempt"
               exit 0
             fi

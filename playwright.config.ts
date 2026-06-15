@@ -32,7 +32,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm --filter @oclushion/proxy exec tsx src/server.ts",
+      command: "pnpm --filter @oclushion/sano-shield-proxy exec tsx src/server.ts",
       port: 8080,
       reuseExistingServer: !process.env.CI,
       env: {
