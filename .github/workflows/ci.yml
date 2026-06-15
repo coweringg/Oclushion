@@ -27,9 +27,12 @@ jobs:
       - run: node scripts/validate-i18n.mjs
       - run: pnpm audit --audit-level=high
       - run: docker compose up -d postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
       - run: pnpm test
         env:
-          CONTROL_API_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/sano
+          CONTROL_API_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
       - run: pnpm build
 
   pii-service:
@@ -67,7 +70,9 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: docker compose up -d postgres redis
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          REDIS_PASSWORD: redispass
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
       - run: pnpm test:e2e
 
@@ -103,7 +108,13 @@ jobs:
       - name: Start web target
         run: |
           cd apps/web
-          node .next/standalone/server.js > /tmp/oclushion-web.log 2>&1 &
+          SERVER=$(find .next/standalone -name server.js -type f 2>/dev/null | head -1)
+          if [ -z "$SERVER" ]; then
+            echo "server.js not found in .next/standalone"
+            find .next/standalone -type f -name "*.js" | head -20
+            exit 1
+          fi
+          node "$SERVER" > /tmp/oclushion-web.log 2>&1 &
           cd ${{ github.workspace }}
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then exit 0; fi

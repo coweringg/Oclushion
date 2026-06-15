@@ -31,8 +31,8 @@ test.describe("Auth — MFA", () => {
 
   test("setup MFA when already enabled returns 409", async () => {
     const res = await apiPost("/v1/auth/mfa/setup", {}, token);
-    const body = await res.json();
-    expect(res.status).toBe(200);
+    void await res.json();
+    expect(res.status).toBe(409);
   });
 
   test("disable MFA when not enabled returns 400", async () => {
