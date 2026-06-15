@@ -3,6 +3,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+  ...tseslint.configs.recommended,
   {
     ignores: [
       "**/node_modules/**",
@@ -11,7 +12,11 @@ export default tseslint.config(
       "**/coverage/**",
       "**/target/**",
       "**/Implementacion/**"],
+    plugins: {
+      "@typescript-eslint": tseslint.plugin,
+    },
     languageOptions: {
+      parser: tseslint.parser,
       globals: {
         ...globals.node,
         ...globals.browser,

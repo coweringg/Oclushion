@@ -68,6 +68,7 @@ jobs:
       - run: docker compose up -d postgres redis
         env:
           POSTGRES_PASSWORD: postgres
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
       - run: pnpm test:e2e
 
   terraform:
@@ -101,7 +102,9 @@ jobs:
       - run: pnpm --filter @oclushion/web build
       - name: Start web target
         run: |
-          pnpm --filter @oclushion/web exec next start --hostname 0.0.0.0 --port 3000 > /tmp/oclushion-web.log 2>&1 &
+          cd apps/web
+          node .next/standalone/server.js > /tmp/oclushion-web.log 2>&1 &
+          cd ${{ github.workspace }}
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then exit 0; fi
             sleep 2
