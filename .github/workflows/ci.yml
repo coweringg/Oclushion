@@ -134,32 +134,21 @@ jobs:
       - name: Start web target
         run: |
           cd apps/web
-          echo "PWD: $(pwd)"
-          echo "ls .next/standalone:"
-          ls -laR .next/standalone/ 2>&1 | head -40 || echo "(no .next/standalone)"
-          SERVER=$(find .next/standalone/apps/web -name server.js -type f 2>/dev/null | head -1)
-          if [ -z "$SERVER" ]; then
-            echo "server.js not found in .next/standalone/apps/web"
-            ls -laR .next/standalone/apps/web/ 2>&1 | head -10
-            exit 1
-          fi
-          echo "Found server: $SERVER"
-          node "$SERVER" &> /tmp/oclushion-web.log &
-          echo "PID: $!"
+          node .next/standalone/apps/web/server.js &
           cd ${{ github.workspace }}
-          for attempt in {1..30}; do
-            if curl --silent --output /dev/null --max-time 2 http://127.0.0.1:3000/; then
-              echo "Server ready on attempt $attempt"
+          for attempt in {1..20}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 2 http://127.0.0.1:3000/ 2>/dev/null || true)
+            if [ -n "$code" ] && [ "$code" != "000" ]; then
+              echo "Server ready (HTTP $code) on attempt $attempt"
               exit 0
             fi
             sleep 2
           done
-          echo "Server failed to start. Log:"
-          cat /tmp/oclushion-web.log 2>/dev/null || echo "(no log)"
+          echo "Server not reachable after 40s"
           exit 1
       - name: Run ZAP baseline
         run: |
-          mkdir -p test-results/zap
+          mkdir -p test-results/zap && chmod 777 test-results/zap
           docker run --rm --network host \
             -v "$PWD/test-results/zap:/zap/wrk:rw" \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
