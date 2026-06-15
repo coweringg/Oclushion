@@ -579,7 +579,7 @@ function renderAgentProgress(
 
 function renderWorklogPanel(entries: Array<{ category: string; icon: string; message: string; timestamp: string }>): string {
   if (entries.length === 0) {
-    return `<div class="worklog-panel"><p>No entries yet</p></div>`;
+    return `<div class="worklog-panel"><p>${t("agent.noEntriesYet")}</p></div>`;
   }
   const recentEntries = entries.slice(-10).reverse();
   const rows = recentEntries
@@ -587,8 +587,8 @@ function renderWorklogPanel(entries: Array<{ category: string; icon: string; mes
     .join("");
   return `
     <div class="worklog-panel">
-      <h4>Worklog</h4>
-      <table><thead><tr><th></th><th>Message</th><th>Time</th></tr></thead>
+      <h4>${t("agent.worklogTitle")}</h4>
+      <table><thead><tr><th></th><th>${t("common.message")}</th><th>${t("common.time")}</th></tr></thead>
       <tbody>${rows}</tbody></table>
     </div>`;
 }
@@ -1793,14 +1793,14 @@ async function refreshGitStatus(ctx: EventHandlerContext): Promise<void> {
   if (!list) return;
   const entries = Array.from(statuses.entries());
   if (entries.length === 0) {
-    list.innerHTML = "<small>Working tree clean</small>";
+    list.innerHTML = `<small>${t("git.workingTreeClean")}</small>`;
     return;
   }
   list.innerHTML = entries.map(([path, status]) =>
     `<div class="git-status-item ${status}">
       <span class="git-status-badge">${(status[0] ?? "?").toUpperCase()}</span>
       <span class="git-status-path">${path}</span>
-      <button data-git-stage="${path}" type="button" class="git-stage-btn" title="Stage file">+</button>
+      <button data-git-stage="${path}" type="button" class="git-stage-btn" title="${t("git.stageFile")}">+</button>
     </div>`
   ).join("");
 }
@@ -1892,7 +1892,7 @@ async function refreshTerminalSuggestions(ctx: EventHandlerContext): Promise<voi
   const list = document.querySelector("#suggestions-list");
   if (!list) return;
   if (suggestions.length === 0) {
-    list.innerHTML = "<span class='suggestion-item disabled'>No suggestions</span>";
+    list.innerHTML = `<span class='suggestion-item disabled'>${t("common.noSuggestions")}</span>`;
     return;
   }
   list.innerHTML = suggestions.map((s) =>
@@ -2618,9 +2618,9 @@ export function renderSession(ctx: EventHandlerContext, session: OclushionSessio
     return;
   }
 
-  if (planName) planName.textContent = `${session.user.plan} Plan`;
+  if (planName) planName.textContent = t("session.planLabel", { plan: session.user.plan });
   if (planRenewal) planRenewal.textContent = formatPlanRenewal(session);
-  if (miniPlan) miniPlan.textContent = `${session.user.plan} Plan`;
+  if (miniPlan) miniPlan.textContent = t("session.planLabel", { plan: session.user.plan });
   if (signInButton) signInButton.textContent = session.user.name || session.user.email;
   ctx.model.set("authError", "");
   ctx.model.set("authSubmitting", false);

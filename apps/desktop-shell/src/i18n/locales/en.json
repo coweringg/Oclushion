@@ -1,5 +1,12 @@
 {
   "common": {
+    "message": "Message",
+    "time": "Time",
+    "noSuggestions": "No suggestions",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "log": "Log",
+    "noRepoOpen": "No repo open",
     "close": "Close",
     "cancel": "Cancel",
     "save": "Save",
@@ -217,7 +224,8 @@
     "statusWait": "WAIT",
     "worklogTitle": "Agent Worklog",
     "worklogEvents": "{{count}} events",
-    "worklogEmpty": "No agent worklog events yet."
+    "worklogEmpty": "No agent worklog events yet.",
+    "noEntriesYet": "No entries yet"
   },
   "fastApply": {
     "title": "Fast Apply",
@@ -231,6 +239,12 @@
     "needsRepo": "Open a repository with source files before using Fast Apply.",
     "confirmWrite": "Fast Apply will write to disk:\n{{path}}\n\nContinue?",
     "wroteFile": "Fast Apply wrote {{path}}. Session {{sessionId}} is pending review."
+  },
+  "test": {
+    "section": "Tests",
+    "run": "Run tests",
+    "detect": "Detect framework",
+    "resultsPlaceholder": "Run tests to see results"
   },
   "godMode": {
     "panel": "Unicorn Controls",
@@ -338,7 +352,24 @@
     "totalTokensSent": "Total tokens sent",
     "promptsSent": "Prompts sent",
     "planRemaining": "Plan remaining",
+    "planLabel": "{{plan}} Plan",
     "creditsValue": "{{count}} credits"
+  },
+  "git": {
+    "section": "Git",
+    "branch": "Branch",
+    "commit": "Commit",
+    "log": "Log",
+    "refresh": "Refresh",
+    "noRepoOpen": "No repo open",
+    "stageFile": "Stage file",
+    "workingTreeClean": "Working tree clean"
+  },
+  "test": {
+    "section": "Tests",
+    "run": "Run tests",
+    "detect": "Detect framework",
+    "resultsPlaceholder": "Run tests to see results"
   },
   "marketplace": {
     "aria": "Skillpacks Marketplace",

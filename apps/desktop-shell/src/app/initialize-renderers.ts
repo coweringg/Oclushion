@@ -135,22 +135,22 @@ export function renderMainLayout(ctx: EventHandlerContext): void {
           </section>
 
           <section class="right-section git-section" id="git-section">
-            <header><h3>Git</h3><span id="git-branch-name">main</span></header>
+            <header><h3>${t("git.section")}</h3><span id="git-branch-name">${t("git.branch")}</span></header>
             <div class="git-actions">
-              <button id="git-refresh-btn" type="button" title="Refresh">↻</button>
-              <button id="git-commit-btn" type="button" title="Commit">Commit</button>
-              <button id="git-log-btn" type="button" title="Log">Log</button>
+              <button id="git-refresh-btn" type="button" title="${t("git.refresh")}">↻</button>
+              <button id="git-commit-btn" type="button" title="${t("git.commit")}">${t("git.commit")}</button>
+              <button id="git-log-btn" type="button" title="${t("git.log")}">${t("git.log")}</button>
             </div>
-            <div id="git-status-list" class="git-status-list"><small>No repo open</small></div>
+            <div id="git-status-list" class="git-status-list"><small>${t("git.noRepoOpen")}</small></div>
           </section>
 
           <section class="right-section test-section" id="test-section">
-            <header><h3>Tests</h3><span id="test-framework-name">-</span></header>
+            <header><h3>${t("test.section")}</h3><span id="test-framework-name">-</span></header>
             <div class="test-actions">
-              <button id="test-run-btn" type="button" title="Run tests">▶ Run</button>
-              <button id="test-detect-btn" type="button" title="Detect framework">🔍 Detect</button>
+              <button id="test-run-btn" type="button" title="${t("test.run")}">▶ ${t("test.run")}</button>
+              <button id="test-detect-btn" type="button" title="${t("test.detect")}">🔍 ${t("test.detect")}</button>
             </div>
-            <div id="test-results" class="test-results"><small>Run tests to see results</small></div>
+            <div id="test-results" class="test-results"><small>${t("test.resultsPlaceholder")}</small></div>
           </section>
 
           <label class="field hidden-control">
