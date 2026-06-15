@@ -104,6 +104,7 @@ jobs:
           DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
           EOF
       - run: docker compose --env-file /tmp/ci.env up -d --wait postgres redis
+      - run: pnpm build
       - run: pnpm test:e2e
 
   terraform:

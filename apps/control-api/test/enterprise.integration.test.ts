@@ -7,6 +7,11 @@ import type {
   DesktopAuthUser,
   OrganizationMemberSummary,
   BillingAccountSummary,
+  ConnectorOAuthStartResult,
+  CreatedGatewayApiKey,
+  CreatedOrganization,
+  CreatedPolicySet,
+  DraftPolicyVersion,
 } from "../src/storage/repository.js";
 import type { FastifyInstance } from "fastify";
 
@@ -15,7 +20,7 @@ const internalToken = "enterprise-test-internal-token-long-enough-32";
 const organizationId = "ae22b1a6-e1fd-43f5-a43d-a0a133db41df";
 const apps = new Set<FastifyInstance>();
 
-class FakeRepository implements ControlRepository {
+class FakeRepository {
   public ready = true;
   public calls: string[] = [];
 
@@ -104,15 +109,15 @@ class FakeRepository implements ControlRepository {
   async listOrganizationMembers(): Promise<OrganizationMemberSummary[]> {
     this.calls.push("listOrganizationMembers");
     return [
-      { userId: "u1", email: "owner@oclushion.local", displayName: "Owner", role: "owner", joinedAt: "2026-01-01T00:00:00.000Z" },
-      { userId: "u2", email: "dev@oclushion.local", displayName: "Developer", role: "developer", joinedAt: "2026-02-01T00:00:00.000Z" },
-      { userId: "u3", email: "auditor@oclushion.local", displayName: "Auditor", role: "auditor", joinedAt: "2026-03-01T00:00:00.000Z" },
+      { userId: "u1", email: "owner@oclushion.local", displayName: "Owner", role: "owner", createdAt: "2026-01-01T00:00:00.000Z", disabledAt: null },
+      { userId: "u2", email: "dev@oclushion.local", displayName: "Developer", role: "developer", createdAt: "2026-02-01T00:00:00.000Z", disabledAt: null },
+      { userId: "u3", email: "auditor@oclushion.local", displayName: "Auditor", role: "auditor", createdAt: "2026-03-01T00:00:00.000Z", disabledAt: null },
     ];
   }
 
   async upsertOrganizationMember(input: { organizationId: string; email: string; role: string; displayName?: string }): Promise<OrganizationMemberSummary> {
     this.calls.push("upsertOrganizationMember");
-    return { userId: "u-new", email: input.email, displayName: input.displayName ?? null, role: input.role as any, joinedAt: new Date().toISOString() };
+    return { userId: "u-new", email: input.email, displayName: input.displayName ?? null, role: input.role as any, createdAt: new Date().toISOString(), disabledAt: null };
   }
 
   async disableOrganizationMember(): Promise<void> { this.calls.push("disableOrganizationMember"); }
@@ -120,10 +125,10 @@ class FakeRepository implements ControlRepository {
 
   async upsertBillingAccount(input: { organizationId: string; plan: string }): Promise<BillingAccountSummary> {
     this.calls.push("upsertBillingAccount");
-    return { organizationId: input.organizationId, plan: input.plan as any, status: "active", billingEmail: "billing@oclushion.local", currentPeriodStart: "2026-01-01", currentPeriodEnd: "2026-12-31" };
+    return { organizationId: input.organizationId, plan: input.plan as any, status: "active", billingEmail: "billing@oclushion.local", currentPeriodStart: "2026-01-01", currentPeriodEnd: "2026-12-31", externalCustomerId: null, updatedAt: "2026-01-01" };
   }
   async getBillingAccount(): Promise<BillingAccountSummary> {
-    return { organizationId, plan: "enterprise", status: "active", billingEmail: "billing@oclushion.local", currentPeriodStart: "2026-01-01", currentPeriodEnd: "2026-12-31" };
+    return { organizationId, plan: "enterprise", status: "active", billingEmail: "billing@oclushion.local", currentPeriodStart: "2026-01-01", currentPeriodEnd: "2026-12-31", externalCustomerId: null, updatedAt: "2026-01-01" };
   }
 
   async getCreditBalance(): Promise<any> { return { organizationId, balance: 100 }; }
@@ -153,24 +158,24 @@ class FakeRepository implements ControlRepository {
   async upsertSSOConnection(): Promise<void> { this.calls.push("upsertSSOConnection"); }
   async deleteSSOConnection(): Promise<void> { this.calls.push("deleteSSOConnection"); }
 
-  async getConnectorOAuthStartUrl(): Promise<ConnectorOAuthStartResult> { return { url: "https://oauth.start", state: "state-1" }; }
+  async getConnectorOAuthStartUrl(): Promise<any> { return { url: "https://oauth.start", state: "state-1" }; }
   async completeConnectorOAuth(): Promise<void> {}
   async createConnectorConnection(): Promise<any> { return { id: "conn-1", providerId: "github", organizationId, status: "active", createdAt: new Date().toISOString() }; }
   async deleteConnectorConnection(): Promise<void> {}
 
-  async createGatewayApiKey(): Promise<CreatedGatewayApiKey> { return { id: "key-1", apiKey: "sk-...", name: "test" }; }
+  async createGatewayApiKey(): Promise<any> { return { id: "key-1", apiKey: "sk-...", name: "test" }; }
   async revokeGatewayApiKey(): Promise<void> {}
   async listGatewayApiKeys(): Promise<any[]> { return []; }
 
-  async createOrganization(name: string): Promise<CreatedOrganization> { return { id: "org-new", name }; }
+  async createOrganization(name: string): Promise<any> { return { id: "org-new", name }; }
   async listAllOrganizations(): Promise<any[]> { return []; }
-  async createPolicySet(): Promise<CreatedPolicySet> { return { id: "ps-1", name: "test" }; }
-  async createPolicyVersion(): Promise<DraftPolicyVersion> { return { id: "pv-1", versionNumber: 1 }; }
+  async createPolicySet(): Promise<any> { return { id: "ps-1", name: "test" }; }
+  async createPolicyVersion(): Promise<any> { return { id: "pv-1", versionNumber: 1 }; }
   async updatePolicySetName(): Promise<void> {}
   async getPolicyVersionSnapshot(): Promise<any> { return { rules: [] }; }
   async deletePolicySet(): Promise<void> {}
 
-  async startConnectorOAuth(): Promise<ConnectorOAuthStartResult> { return { url: "https://oauth.start", state: "state-1" }; }
+  async startConnectorOAuth(): Promise<any> { return { url: "https://oauth.start", state: "state-1" }; }
   async getConnectorConnection(): Promise<any> { return null; }
   async updateConnectorConnectionStatus(): Promise<void> {}
 
@@ -213,7 +218,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SSO: authorize returns redirectUrl + flowId", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -234,7 +239,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
   it("SSO: authorize rejects unknown domain", async () => {
     const repo = new FakeRepository();
     repo.getSSOConnectionByDomain = async () => null;
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -248,7 +253,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SSO: callback returns token for programmatic clients", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -261,7 +266,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SSO: admin CRUD requires org:manage permission", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const listRes = await app.inject({
@@ -280,7 +285,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("Audit: records and lists events", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const recordRes = await app.inject({
@@ -297,7 +302,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("Audit: export returns CSV or JSON", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const jsonRes = await app.inject({
@@ -316,7 +321,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("Policies: returns bound snapshot", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -329,7 +334,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: ServiceProviderConfig", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -343,7 +348,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: Schemas", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -358,7 +363,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: list Users requires X-Organization-ID", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -371,7 +376,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: list Users with org header", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -391,7 +396,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: create User", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -417,7 +422,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: get User", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -434,7 +439,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: PATCH User deactivate", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -456,7 +461,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: delete User", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -473,7 +478,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("SCIM: list Groups", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, internalToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -495,7 +500,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("Auth: login with valid credentials returns session", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const res = await app.inject({
@@ -512,7 +517,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
 
   it("RBAC: OrgRole enum matches DB constraint", async () => {
     const repo = new FakeRepository();
-    const app = await createApp(repo, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const roles = ["owner", "admin", "security_officer", "auditor", "developer", "viewer"];

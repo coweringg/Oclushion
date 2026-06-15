@@ -35,7 +35,7 @@ integrationDescribe("Postgres control repository", () => {
   });
 
   it("publishes a tenant snapshot through HTTP and persists audit evidence", async () => {
-    const app = createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
     const headers = { authorization: `Bearer ${adminToken}` };
     const suffix = Date.now();
 

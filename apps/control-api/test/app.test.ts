@@ -34,7 +34,7 @@ const policyVersionId = "d85e436a-7b39-43ce-b2e8-bc1ac44d1e79";
 const connectorConnectionId = "11111111-2222-4333-8444-555555555555";
 const apps = new Set<FastifyInstance>();
 
-class FakeRepository implements ControlRepository {
+class FakeRepository {
   public ready = true;
   public calls: string[] = [];
   public duplicateDesktopRegistration = false;
@@ -578,7 +578,7 @@ describe("control API routes", () => {
 
   it("returns a desktop session with the user's plan", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -598,7 +598,7 @@ describe("control API routes", () => {
 
   it("registers a native desktop user and returns a session", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -626,7 +626,7 @@ describe("control API routes", () => {
 
   it("allows desktop auth CORS preflight requests", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -645,7 +645,7 @@ describe("control API routes", () => {
   it("rejects native desktop registration when the email already exists", async () => {
     const repository = new FakeRepository();
     repository.duplicateDesktopRegistration = true;
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -667,7 +667,7 @@ describe("control API routes", () => {
   it("separates liveness and dependency readiness", async () => {
     const repository = new FakeRepository();
     repository.ready = false;
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     expect((await app.inject({ method: "GET", url: "/health/live" })).statusCode).toBe(200);
@@ -678,7 +678,7 @@ describe("control API routes", () => {
 
   it("protects control plane mutations with the bootstrap bearer token", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -693,7 +693,7 @@ describe("control API routes", () => {
 
   it("publishes and serves a tenant-scoped snapshot", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
     const headers = { authorization: `Bearer ${adminToken}` };
 
@@ -715,7 +715,7 @@ describe("control API routes", () => {
 
   it("creates tenant-scoped gateway keys and serves internal bound snapshots", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, {
+    const app = await createApp(repository as any, {
       adminToken,
       internalToken: "phase2-internal-token-that-is-long-enough",
       enableRateLimiting: false,
@@ -753,7 +753,7 @@ describe("control API routes", () => {
 
   it("accepts browser protect audit events without raw prompt content", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
@@ -778,7 +778,7 @@ describe("control API routes", () => {
 
   it("manages connector OAuth without returning credential material", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
     const headers = { authorization: `Bearer ${adminToken}` };
 
@@ -831,7 +831,7 @@ describe("control API routes", () => {
 
   it("manages identity, billing, usage and launch readiness", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
     const headers = { authorization: `Bearer ${adminToken}` };
 
@@ -915,7 +915,7 @@ describe("control API routes", () => {
 
   it("rejects invalid tenant identifiers before storage access", async () => {
     const repository = new FakeRepository();
-    const app = await createApp(repository, { adminToken, enableRateLimiting: false });
+    const app = await createApp(repository as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
 
     const response = await app.inject({
