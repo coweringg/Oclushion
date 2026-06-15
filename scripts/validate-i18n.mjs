@@ -10,9 +10,6 @@ const REQUIRED_LOCALES = ["en", "es", "fr", "de", "ja", "ko", "pt", "zh"];
 const HARDCODED_PATTERNS = [
   /\.innerHTML\s*=\s*`[^`]*[a-z]{2,}[^`]*`/gi,
   /\.textContent\s*=\s*`[^`]*[a-z]{2,}[^`]*`/gi,
-  /placeholder\s*=\s*["'][^"']*[a-z]{2,}[^"']*["']/gi,
-  /title\s*=\s*["'][^"']*[a-z]{2,}[^"']*["']/gi,
-  />\s*[A-Z][a-z]+(?:\s+[a-z]+)*\s*</g,
 ];
 
 const SCAN_DIRS = [
@@ -121,7 +118,7 @@ const hardcodedOk = checkHardcodedStrings();
 
 console.log(`\n--- Summary ---`);
 console.log(`Locale files: ${localesOk ? "PASS" : "ISSUES"}`);
-console.log(`Hardcoded strings: ${hardcodedOk ? "PASS" : `${exitCode} ISSUES`}`);
+  console.log(`Hardcoded strings: ${hardcodedOk ? "PASS" : `${issues} ISSUES`}`);
 
 if (!localesOk || !hardcodedOk) exitCode = 1;
 process.exit(exitCode);

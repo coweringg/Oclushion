@@ -75,7 +75,13 @@
     "ok": "OK",
     "err": "ERR",
     "warn": "WARN",
-    "info": "INFO"
+    "info": "INFO",
+    "message": "Message",
+    "time": "Time",
+    "noSuggestions": "No suggestions",
+    "refresh": "Refresh",
+    "log": "Log",
+    "noRepoOpen": "No repo open"
   },
   "navigation": {
     "global": "Global navigation",
@@ -217,7 +223,8 @@
     "statusWait": "WAIT",
     "worklogTitle": "Agent Worklog",
     "worklogEvents": "{{count}} events",
-    "worklogEmpty": "No agent worklog events yet."
+    "worklogEmpty": "No agent worklog events yet.",
+    "noEntriesYet": "No entries yet"
   },
   "fastApply": {
     "title": "Fast Apply",
@@ -338,7 +345,8 @@
     "totalTokensSent": "Total tokens sent",
     "promptsSent": "Prompts sent",
     "planRemaining": "Plan remaining",
-    "creditsValue": "{{count}} credits"
+    "creditsValue": "{{count}} credits",
+    "planLabel": "{{plan}} Plan"
   },
   "marketplace": {
     "aria": "Skillpacks Marketplace",
@@ -577,5 +585,21 @@
   "notifications": {
     "taskComplete": "Oclushion - Task Complete",
     "taskFinished": "{{role}} finished \"{{title}}\" in {{duration}}s"
+  },
+  "test": {
+    "section": "Tests",
+    "run": "Run tests",
+    "detect": "Detect framework",
+    "resultsPlaceholder": "Run tests to see results"
+  },
+  "git": {
+    "section": "Git",
+    "branch": "Branch",
+    "commit": "Commit",
+    "log": "Log",
+    "refresh": "Refresh",
+    "noRepoOpen": "No repo open",
+    "stageFile": "Stage file",
+    "workingTreeClean": "Working tree clean"
   }
 }
