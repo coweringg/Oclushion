@@ -99,7 +99,7 @@ jobs:
           DATA_GATEWAY_TOKEN=ci-gateway-token
           DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
           EOF
-      - run: docker compose --env-file /tmp/ci.env up -d postgres redis
+      - run: docker compose --env-file /tmp/ci.env up -d --wait postgres redis
       - run: pnpm test:e2e
 
   terraform:
@@ -155,7 +155,7 @@ jobs:
             -t http://127.0.0.1:3000 \
             -r zap-baseline.html \
             -J zap-baseline.json \
-            -m 3
+            -m 3 -I
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

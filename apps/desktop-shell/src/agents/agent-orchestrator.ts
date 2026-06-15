@@ -315,4 +315,5 @@ function defaultPathsForRole(role: AgentRole): string[] {
   if (role === "docs" || role === "architect") {
     return ["docs*.md"];
   }
-  return [`agent-zones/${role}
+  return [`agent-zones/${role}/*`];
+}

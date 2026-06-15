@@ -4,9 +4,9 @@ import { performance } from "node:perf_hooks";
 import { type FastifyPluginAsync } from "fastify";
 
 import { evaluatePolicy } from "@oclushion/policy-runtime";
-import { proxyProviderSchema, type AuditEvent, type ProxyProvider, type SensitiveEntityType } from "@oclushion/shared";
+import { proxyProviderSchema, type ProxyProvider, type SensitiveEntityType } from "@oclushion/shared";
 
-import type { AuditSink } from "../audit/audit-sink.js";
+import type { AuditEvent, AuditSink } from "../audit/audit-sink.js";
 import type { ClientApiKeyResolver } from "../auth/client-api-key-verifier.js";
 import type { TextDetector } from "../detectors/pii-client.js";
 import type { PolicySnapshotProvider } from "../policy/policy-snapshot-cache.js";
@@ -28,10 +28,19 @@ export type ProxyRouteServices = {
   audit?: AuditSink;
 };
 
+export function upstreamUrl(base: string, path: string): URL {
+  return new URL(path, base.replace(/\/+$/, "") + "/");
+}
+
 const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services) => {
   app.post<{ Params: { provider: string; "*": string } }>(
     "/v1/proxy/:provider/*",
     async (request, reply) => {
+      // ... previous code ...
+      const upstreamUrlObj = upstreamUrl(
+        services.providerBaseUrls[provider],
+        wildcardPath
+      );
       const requestId = randomUUID();
       const start = performance.now();
       const provider = proxyProviderSchema.parse(request.params.provider);
@@ -55,9 +64,11 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         action: "proxy:forward",
         provider,
         resource: `${provider}/${wildcardPath}`,
+        metadata: {},
+        detections: [],
       };
 
-      const snapshot = await services.policySnapshots.get(principal.organizationId, "chat-protect");
+      const snapshot = await services.policySnapshots.get(principal.organizationId);
       if (snapshot) {
         const decision = evaluatePolicy(snapshot, policyContext);
         if (decision.effect === "BLOCK") {
@@ -85,21 +96,16 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         return reply.code(400).send({ error: "Request body is required" });
       }
 
-      const tokenizeTypes: readonly SensitiveEntityType[] = ["email", "phone", "ssn", "credit_card", "secret"];
+      const tokenizeTypes: readonly SensitiveEntityType[] = ["email", "phone", "person", "payment_card", "private_key"];
       const inspection = await inspectPayload(rawBody, services.detector, requestId);
       const sanitized = tokenizePayload(inspection, tokenizeTypes);
-
-      const upstreamUrl = new URL(
-        wildcardPath,
-        services.providerBaseUrls[provider].replace(/\/+$/, "") + "/",
-      );
 
       if (sanitized.mapping && Object.keys(sanitized.mapping).length > 0) {
         await services.tokenStore.put(requestId, sanitized.mapping);
       }
 
       const upstreamResponse = await services.upstream.forward({
-        url: upstreamUrl,
+        url: upstreamUrlObj,
         headers: {
           "content-type": "application/json",
           authorization: (request.headers.authorization as string) ?? "",
@@ -136,4 +142,3 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
 };
 
 export default proxyRoutes;
-export type { ProxyRouteServices };

@@ -26,6 +26,17 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
+      command: "pnpm --filter @oclushion/control-api exec tsx src/server.ts",
+      port: 8082,
+      reuseExistingServer: !process.env.CI,
+      env: {
+        NODE_ENV: "test",
+        DATABASE_URL: databaseUrl,
+        REDIS_URL: "redis://127.0.0.1:6379",
+        PORT: "8082"
+      }
+    },
+    {
       command: "python -m uvicorn src.main:app --host 127.0.0.1 --port 8081",
       cwd: "packages/sano-shield-pii-service",
       port: 8081,

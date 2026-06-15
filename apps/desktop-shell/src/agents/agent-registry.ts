@@ -8,8 +8,7 @@ export const agentDefinitions: AgentDefinition[] = [
     description: "Plans technical work and assigns safe implementation zones.",
     model: "claude-opus-4-8",
     permissions: ["read", "propose"],
-    allowedPaths: ["docs
-secrets/**", "**/migrations/**"],
+    allowedPaths: ["docs/*", "secrets/**", "**/migrations/**"],
     systemPrompt:
       "You are a Senior Software Architect. Produce a precise implementation plan, file list, risks and sequencing. Do not write implementation code.",
   },
@@ -20,8 +19,7 @@ secrets/**", "**/migrations/**"],
     description: "Implements production TypeScript changes as Safe Diff proposals.",
     model: "claude-sonnet-4-6",
     permissions: ["read", "propose"],
-    allowedPaths: ["apps
-migrations/**", "**/auth/**", "**/billing/**"],
+    allowedPaths: ["apps/*", "migrations/**", "**/auth/**", "**/billing/**"],
     systemPrompt:
       "You are a Senior Fullstack Builder. Generate complete, production-ready code proposals only. Strict TypeScript, ESM imports, no broad any.",
   },
@@ -32,8 +30,7 @@ migrations/**", "**/auth/**", "**/billing/**"],
     description: "Reviews implementation quality and proposes corrections.",
     model: "gpt-5.5",
     permissions: ["read", "propose"],
-    allowedPaths: ["apps
-*"],
+    allowedPaths: ["apps/*"],
     forbiddenPaths: [],
     systemPrompt:
       "You are a Chief Security Officer. Find SQL injection, XSS, auth bypasses, secret leakage, unsafe dependencies and PII exposure. Mark blockers clearly.",
