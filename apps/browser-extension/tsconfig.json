@@ -1,0 +1,10 @@
+{
+  "extends": "@oclushion/config/tsconfig/node.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "scripts/**/*.mjs"]
+}

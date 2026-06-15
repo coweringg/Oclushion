@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "control-api.fullname" . }}
+  labels:
+    {{- include "control-api.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "control-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "control-api.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "control-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.env.NODE_ENV | quote }}
+            - name: CONTROL_API_HOST
+              value: {{ .Values.env.CONTROL_API_HOST | quote }}
+            - name: CONTROL_API_PORT
+              value: {{ .Values.env.CONTROL_API_PORT | quote }}
+            - name: CONTROL_API_ENABLE_RATE_LIMITING
+              value: {{ .Values.env.CONTROL_API_ENABLE_RATE_LIMITING | quote }}
+            - name: CONTROL_API_RATE_LIMIT_MAX
+              value: {{ .Values.env.CONTROL_API_RATE_LIMIT_MAX | quote }}
+            - name: CONTROL_API_URL
+              value: {{ .Values.env.CONTROL_API_URL | default (printf "http://%s:%s" (include "control-api.fullname" .) .Values.env.CONTROL_API_PORT) | quote }}
+            - name: REDIS_HOST
+              value: {{ .Values.env.REDIS_HOST | quote }}
+            - name: REDIS_PORT
+              value: {{ .Values.env.REDIS_PORT | quote }}
+            - name: REDIS_TLS_ENABLED
+              value: {{ .Values.env.REDIS_TLS_ENABLED | quote }}
+            - name: REDIS_KEY_PREFIX
+              value: {{ .Values.env.REDIS_KEY_PREFIX | quote }}
+            - name: OCLUSHION_BILLING_SUCCESS_URL
+              value: {{ .Values.env.OCLUSHION_BILLING_SUCCESS_URL | quote }}
+            - name: OCLUSHION_BILLING_CANCEL_URL
+              value: {{ .Values.env.OCLUSHION_BILLING_CANCEL_URL | quote }}
+            {{- range $key, $val := .Values.envSecrets }}
+            {{- if $val }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $val }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

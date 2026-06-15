@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oclushion Marketplace Demo</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Oclushion Marketplace</h1>
+  <p>Browse <span id="skill-count"></span> curated AI skills for development</p>
+  <div class="search-bar">
+    <input type="search" id="search" placeholder="Search skills..." autofocus>
+    <select id="category-filter">
+      <option value="">All Categories</option>
+    </select>
+    <select id="tier-filter">
+      <option value="">All Tiers</option>
+      <option value="free">Free</option>
+      <option value="pro">Pro</option>
+      <option value="enterprise">Enterprise</option>
+    </select>
+  </div>
+</header>
+<main id="grid" class="skill-grid"></main>
+<footer>
+  <p>Powered by Oclushion &mdash; <span id="total-count"></span> skills, all verified with SHA-256 integrity</p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

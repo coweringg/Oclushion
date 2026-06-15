@@ -1,0 +1,29 @@
+{
+  "name": "@oclushion/sano-shield-sdk",
+  "version": "1.0.0",
+  "description": "Lightweight TypeScript client for routing OpenAI and Anthropic requests through Oclushion Sano Shield.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*"
+  }
+}

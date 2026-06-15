@@ -1,0 +1,49 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for the Oclushion IDE",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "updater:default",
+    "opener:default",
+    "notification:default",
+    "fs:allow-exists",
+    "fs:allow-stat",
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        { "path": "$APPDATA/oclushion/config/**" },
+        { "path": "$APPDATA/oclushion/skillpacks/**" },
+        { "path": "$APPDATA/oclushion/cache/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        { "path": "$APPDATA/oclushion/config/**" },
+        { "path": "$APPDATA/oclushion/skillpacks/**" },
+        { "path": "$APPDATA/oclushion/cache/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        { "path": "$APPDATA/oclushion/config/**" },
+        { "path": "$APPDATA/oclushion/skillpacks/**" },
+        { "path": "$APPDATA/oclushion/cache/**" }
+      ]
+    },
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA/oclushion/config/**" },
+        { "path": "$APPDATA/oclushion/skillpacks/**" },
+        { "path": "$APPDATA/oclushion/cache/**" }
+      ]
+    },
+    "sql:default",
+    "sql:allow-execute"
+  ]
+}

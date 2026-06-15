@@ -1,0 +1,29 @@
+[package]
+name = "secure-sandbox"
+version = "0.1.0"
+edition = "2021"
+description = "WASM sandboxing with Wasmtime for Oculushion: secure code execution, memory/fuel limits, WASI isolation"
+
+[lib]
+name = "secure_sandbox"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasmtime = "26"
+wasmtime-wasi = "26"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4", "serde"] }
+tokio = { version = "1", features = ["full"] }
+wat = "1"
+hex = "0.4"
+dunce = "1"
+anyhow = "1"
+
+[dev-dependencies]
+criterion = "0.5"
+wat = "1"
+
+[[bench]]
+name = "exec_bench"
+harness = false

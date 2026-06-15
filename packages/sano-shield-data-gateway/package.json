@@ -1,0 +1,28 @@
+{
+  "name": "@oclushion/sano-shield-data-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @oclushion/sano-shield-data-protect build && pnpm --filter @oclushion/shared build && tsc -p tsconfig.build.json",
+    "dev": "tsx watch --env-file=../../.env src/server.ts",
+    "lint": "eslint src test",
+    "start": "node dist/server.js",
+    "test": "pnpm --filter @oclushion/sano-shield-data-protect build && vitest run",
+    "typecheck": "pnpm --filter @oclushion/sano-shield-data-protect build && pnpm --filter @oclushion/shared build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@oclushion/sano-shield-data-protect": "workspace:*",
+    "@oclushion/shared": "workspace:*",
+    "fastify": "^5.8.5",
+    "pg": "^8.16.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*",
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.22.3"
+  }
+}

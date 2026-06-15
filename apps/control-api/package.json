@@ -1,0 +1,37 @@
+{
+  "name": "@oclushion/control-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && tsc -p tsconfig.build.json",
+    "db:migrate": "tsx --env-file=../../.env src/migrate.ts",
+    "dev": "tsx watch --env-file=../../.env src/server.ts",
+    "lint": "eslint src test",
+    "start": "node --import ./dist/instrumentation.js dist/server.js",
+    "start:worker": "node dist/jobs/worker-entry.js",
+    "test": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && vitest run",
+    "typecheck": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^6.0.0",
+    "@oclushion/connectors": "workspace:*",
+    "@oclushion/shared": "workspace:*",
+    "@sentry/node": "^10.54.0",
+    "@workos-inc/node": "^10.2.0",
+    "bullmq": "^5.78.0",
+    "fastify": "^5.8.5",
+    "ioredis": "^5.10.1",
+    "pg": "^8.16.3",
+    "stripe": "^22.2.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*",
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.22.3"
+  }
+}

@@ -1,0 +1,452 @@
+name: oclushion-prod
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  public:
+    driver: bridge
+  monitoring:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  letsencrypt:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  backup-data:
+
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: oclushion-traefik
+    command:
+      - "--api.insecure=false"
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@oclushion.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - public
+    restart: unless-stopped
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.3
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: oclushion-postgres
+    environment:
+      POSTGRES_DB: oclushion
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?required}"
+      POSTGRES_USER: "${POSTGRES_USER:?required}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./packages/sano-shield-proxy/sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?required} -d oclushion"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 1g
+    mem_reservation: 512m
+    cpus: 2.0
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: oclushion-redis
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru", "--requirepass", "${REDIS_PASSWORD:?required}"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?required}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+
+  control-api:
+    image: ghcr.io/oclushion/control-api:${VERSION:-latest}
+    container_name: oclushion-control-api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/oclushion"
+      CONTROL_API_HOST: "0.0.0.0"
+      CONTROL_API_PORT: "8082"
+      CONTROL_API_ADMIN_TOKEN: "${CONTROL_API_ADMIN_TOKEN:?required}"
+      CONTROL_API_INTERNAL_TOKEN: "${CONTROL_API_INTERNAL_TOKEN:?required}"
+      CONTROL_API_ENABLE_RATE_LIMITING: "true"
+      CONTROL_API_RATE_LIMIT_MAX: "120"
+      CONTROL_API_URL: "https://${DOMAIN:-api.oclushion.com}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:-}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
+      OCLUSHION_BILLING_SUCCESS_URL: "${OCLUSHION_BILLING_SUCCESS_URL:-https://oclushion.com/billing/success}"
+      OCLUSHION_BILLING_CANCEL_URL: "${OCLUSHION_BILLING_CANCEL_URL:-https://oclushion.com/billing/cancel}"
+      WORKOS_API_KEY: "${WORKOS_API_KEY:-}"
+      WORKOS_CLIENT_ID: "${WORKOS_CLIENT_ID:-}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: production
+      SENTRY_RELEASE: "${VERSION:-latest}"
+      SENTRY_TRACES_SAMPLE_RATE: "0.05"
+      CATALOG_SECRET_KEY: "${CATALOG_SECRET_KEY:-}"
+      ADMIN_API_TOKEN: "${ADMIN_API_TOKEN:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.control-api.rule=Host(`${DOMAIN:-api.oclushion.com}`)"
+      - "traefik.http.routers.control-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.control-api.tls=true"
+      - "traefik.http.services.control-api.loadbalancer.server.port=8082"
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    user: "${CONTROL_API_UID:-10001}"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sano-shield-proxy:
+    image: ghcr.io/oclushion/sano-shield-proxy:${VERSION:-latest}
+    container_name: oclushion-proxy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/oclushion"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?required}"
+      PII_SERVICE_URL: "http://sano-shield-pii-service:8081"
+      CONTROL_API_URL: "http://control-api:8082"
+      CONTROL_API_INTERNAL_TOKEN: "${CONTROL_API_INTERNAL_TOKEN:?required}"
+      PROXY_POLICY_ORGANIZATION_IDS: "${PROXY_POLICY_ORGANIZATION_IDS:-}"
+      POLICY_SNAPSHOT_REFRESH_MS: "30000"
+      POLICY_SNAPSHOT_MAX_AGE_MS: "120000"
+      TOKEN_MAPPING_ENCRYPTION_KEY: "${TOKEN_MAPPING_ENCRYPTION_KEY:?required}"
+      TOKEN_MAPPING_TTL_SECONDS: "300"
+      PROXY_PORT: "8080"
+      PROXY_HOST: "0.0.0.0"
+      PROXY_ALLOWED_UPSTREAM_HOSTS: "${PROXY_ALLOWED_UPSTREAM_HOSTS:-api.openai.com,api.anthropic.com}"
+      OPENAI_UPSTREAM_BASE_URL: "${OPENAI_UPSTREAM_BASE_URL:-https://api.openai.com}"
+      ANTHROPIC_UPSTREAM_BASE_URL: "${ANTHROPIC_UPSTREAM_BASE_URL:-https://api.anthropic.com}"
+      ENABLE_AUDIT_LOG: "true"
+      ENABLE_RATE_LIMITING: "true"
+      PROXY_RATE_LIMIT_MAX: "300"
+      PROXY_MAX_BODY_BYTES: "1048576"
+      PROXY_UPSTREAM_TIMEOUT_MS: "30000"
+      PROXY_UPSTREAM_RETRY_MAX: "2"
+      PROXY_IP_DENYLIST: "${PROXY_IP_DENYLIST:-}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: production
+      SENTRY_RELEASE: "${VERSION:-latest}"
+      SENTRY_TRACES_SAMPLE_RATE: "0.05"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  control-api-worker:
+    image: ghcr.io/oclushion/control-api:${VERSION:-latest}
+    container_name: oclushion-control-worker
+    entrypoint: ["node", "dist/jobs/worker-entry.js"]
+    environment:
+      NODE_ENV: production
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/oclushion"
+      AGENT_WORKER_CONCURRENCY: "2"
+      REPO_WORKER_CONCURRENCY: "1"
+      CONTROL_API_INTERNAL_TOKEN: "${CONTROL_API_INTERNAL_TOKEN:?required}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      replicas: 2
+
+  sano-shield-pii-service:
+    image: ghcr.io/oclushion/sano-shield-pii-service:${VERSION:-latest}
+    container_name: oclushion-pii-service
+    environment:
+      NODE_ENV: production
+      PII_SERVICE_PORT: "8081"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/oclushion"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: production
+      SENTRY_RELEASE: "${VERSION:-latest}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  sano-shield-data-gateway:
+    image: ghcr.io/oclushion/sano-shield-data-gateway:${VERSION:-latest}
+    container_name: oclushion-data-gateway
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/oclushion"
+      DATA_SOURCE_DATABASE_URL: "${DATA_SOURCE_DATABASE_URL:?required}"
+      DATA_GATEWAY_HOST: "0.0.0.0"
+      DATA_GATEWAY_PORT: "8083"
+      DATA_GATEWAY_TOKEN: "${DATA_GATEWAY_TOKEN:?required}"
+      DATA_PROTECT_ENCRYPTION_KEY: "${DATA_PROTECT_ENCRYPTION_KEY:?required}"
+      DATA_GATEWAY_ENABLE_RATE_LIMITING: "true"
+      DATA_GATEWAY_RATE_LIMIT_MAX: "120"
+      DATA_GATEWAY_MAX_BODY_BYTES: "5242880"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`${GATEWAY_DOMAIN:-gateway.oclushion.com}`)"
+      - "traefik.http.routers.gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.gateway.tls=true"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8083"
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  sano-shield-pii-service:
+    image: ghcr.io/oclushion/sano-shield-pii-service:${VERSION:-latest}
+    container_name: oclushion-pii-service
+    environment:
+      DETECT_ENTITIES: "${DETECT_ENTITIES:-email,phone,credit_card,ssn,api_key}"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+
+  web:
+    image: ghcr.io/oclushion/web:${VERSION:-latest}
+    container_name: oclushion-web
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: "https://${DOMAIN:-oclushion.com}"
+      NEXT_PUBLIC_API_URL: "https://${DOMAIN:-api.oclushion.com}"
+      NEXT_PUBLIC_SENTRY_DSN: "${NEXT_PUBLIC_SENTRY_DSN:-}"
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN:-oclushion.com}`)"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.web.tls=true"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+    networks:
+      - public
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus:v3.2
+    container_name: oclushion-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - internal
+      - monitoring
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+
+  loki:
+    image: grafana/loki:3.4
+    container_name: oclushion-loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./deploy/monitoring/loki/loki-config.yml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    networks:
+      - monitoring
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 0.5
+
+  promtail:
+    image: grafana/promtail:3.4
+    container_name: oclushion-promtail
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./deploy/monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/log:/var/log:ro
+    networks:
+      - monitoring
+    restart: unless-stopped
+    mem_limit: 64m
+    cpus: 0.2
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:11.5
+    container_name: oclushion-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_PASSWORD:?required}"
+      GF_INSTALL_PLUGINS: ""
+      GF_SERVER_ROOT_URL: "https://${MONITORING_DOMAIN:-monitor.oclushion.com}"
+    volumes:
+      - ./deploy/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./deploy/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana-data:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`${MONITORING_DOMAIN:-monitor.oclushion.com}`)"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    networks:
+      - monitoring
+      - public
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+
+  db-backup:
+    image: postgres:17-alpine
+    container_name: oclushion-db-backup
+    environment:
+      POSTGRES_DB: oclushion
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?required}"
+      POSTGRES_USER: "${POSTGRES_USER:?required}"
+      PGPASSWORD: "${POSTGRES_PASSWORD:?required}"
+      BACKUP_KEEP_DAYS: "${BACKUP_KEEP_DAYS:-7}"
+      BACKUP_SCHEDULE: "${BACKUP_SCHEDULE:-0 3 * * *}"
+      BACKUP_AWS_S3_BUCKET: "${BACKUP_AWS_S3_BUCKET:-}"
+      BACKUP_AWS_ACCESS_KEY_ID: "${BACKUP_AWS_ACCESS_KEY_ID:-}"
+      BACKUP_AWS_SECRET_ACCESS_KEY: "${BACKUP_AWS_SECRET_ACCESS_KEY:-}"
+      BACKUP_AWS_REGION: "${BACKUP_AWS_REGION:-us-east-1}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - backup-data:/backups
+      - ./scripts/db-backup.sh:/usr/local/bin/db-backup.sh:ro
+    entrypoint: >
+      sh -c "echo '0 3 * * * /usr/local/bin/db-backup.sh' > /etc/crontabs/root && crond -f -l 2"
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true

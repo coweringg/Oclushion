@@ -1,0 +1,31 @@
+{
+  "name": "@oclushion/sano-shield-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch --env-file=../../.env src/server.ts",
+    "lint": "eslint src test",
+    "start": "node --import ./dist/instrumentation.js dist/server.js",
+    "test": "pnpm --filter @oclushion/shared build && vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/rate-limit": "^10.3.0",
+    "@oclushion/policy-runtime": "workspace:*",
+    "@oclushion/shared": "workspace:*",
+    "@sentry/node": "^10.54.0",
+    "fastify": "^5.8.5",
+    "ioredis": "^5.8.2",
+    "pg": "^8.16.3",
+    "undici": "^7.16.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*",
+    "@types/pg": "^8.15.6",
+    "tsx": "^4.22.3"
+  }
+}

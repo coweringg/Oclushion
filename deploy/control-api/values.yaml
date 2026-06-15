@@ -1,0 +1,147 @@
+replicaCount: 2
+
+image:
+  repository: oclushion/control-api
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 8082
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: control-api.oclushion.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  httpGet:
+    path: /health
+    port: http
+
+livenessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 3
+  failureThreshold: 3
+  httpGet:
+    path: /health
+    port: http
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - {{ include "control-api.name" . }}
+          topologyKey: kubernetes.io/hostname
+
+env:
+  NODE_ENV: "production"
+  CONTROL_API_HOST: "0.0.0.0"
+  CONTROL_API_PORT: "8082"
+  CONTROL_API_ENABLE_RATE_LIMITING: "true"
+  CONTROL_API_RATE_LIMIT_MAX: "120"
+  CONTROL_API_URL: ""
+  OCLUSHION_BILLING_SUCCESS_URL: "https://oclushion.com/billing/success"
+  OCLUSHION_BILLING_CANCEL_URL: "https://oclushion.com/billing/cancel"
+  REDIS_HOST: ""
+  REDIS_PORT: "6379"
+  REDIS_TLS_ENABLED: "false"
+  REDIS_KEY_PREFIX: "control-api:"
+
+envSecrets:
+  DATABASE_URL: ""
+  CONTROL_API_ADMIN_TOKEN: ""
+  CONTROL_API_INTERNAL_TOKEN: ""
+  STRIPE_SECRET_KEY: ""
+  STRIPE_WEBHOOK_SECRET: ""
+  WORKOS_API_KEY: ""
+  WORKOS_CLIENT_ID: ""
+  SENTRY_DSN: ""
+  CATALOG_SECRET_KEY: ""
+  ADMIN_API_TOKEN: ""
+
+migrations:
+  enabled: true
+  image:
+    repository: oclushion/control-api
+    tag: ""
+    pullPolicy: IfNotPresent
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 300

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "labels": ["dependencies", "automated"],
+  "packageRules": [
+    {
+      "description": "Docker image updates - require CI validation",
+      "matchDatasources": ["docker"],
+      "labels": ["docker", "infrastructure"],
+      "automerge": false,
+      "stabilityDays": 3
+    },
+    {
+      "description": "Automatically merge patch updates for devDependencies",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Minor updates to core dependencies require manual review",
+      "matchPackageNames": ["pnpm", "turbo", "typescript", "@tauri-apps/*", "eslint", "vitest"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "reviewers": ["team:core"]
+    },
+    {
+      "description": "Group Tauri-related updates together",
+      "matchPackagePrefixes": ["@tauri-apps/"],
+      "groupName": "Tauri packages",
+      "automerge": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security", "automated"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "schedule": ["before 9am on monday"],
+  "docker": {
+    "pinDigests": true,
+    "major": {
+      "enabled": true
+    }
+  },
+  "regexManagers": [
+    {
+      "description": "Update Docker image versions in compose files",
+      "fileMatch": ["compose\\.prod\\.yaml$"],
+      "matchStrings": ["image: (?<depName>\\S+):(?<currentValue>\\S+)"],
+      "datasourceTemplate": "docker"
+    }
+  ]
+}

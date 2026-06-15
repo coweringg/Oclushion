@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample App - QA Fixture</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1 class="app-title">Sample Dashboard</h1>
+      <nav class="nav">
+        <a href="#dashboard" class="nav-link active" data-page="dashboard">Dashboard</a>
+        <a href="#login" class="nav-link" data-page="login">Login</a>
+        <a href="#settings" class="nav-link" data-page="settings">Settings</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section id="page-login" class="page active">
+        <form id="login-form" class="form">
+          <h2 class="form-title">Sign In</h2>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+          </div>
+          <button type="submit" id="login-btn" class="btn btn-primary">Login</button>
+          <p id="login-error" class="error-message hidden"></p>
+        </form>
+      </section>
+
+      <section id="page-dashboard" class="page hidden">
+        <h2 class="dashboard-title">Welcome, User!</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-value" id="stat-users">1,234</p>
+          </div>
+          <div class="stat-card">
+            <h3>Revenue</h3>
+            <p class="stat-value" id="stat-revenue">$45,678</p>
+          </div>
+          <div class="stat-card">
+            <h3>Active Sessions</h3>
+            <p class="stat-value" id="stat-sessions">89</p>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chart-canvas" width="600" height="300"></canvas>
+        </div>
+      </section>
+
+      <section id="page-settings" class="page hidden">
+        <h2>Settings</h2>
+        <div class="form-group">
+          <label for="theme-select">Theme</label>
+          <select id="theme-select">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="auto">Auto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notifications-toggle">
+            <input type="checkbox" id="notifications-toggle" checked>
+            Enable Notifications
+          </label>
+        </div>
+        <button id="save-settings" class="btn btn-primary">Save Settings</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Sample App v1.0 &mdash; QA Test Fixture</p>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

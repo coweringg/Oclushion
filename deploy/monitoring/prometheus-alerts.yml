@@ -1,0 +1,69 @@
+groups:
+  - name: oclushion-production
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"control-api|desktop-shell|proxy|gateway"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.job }} is down on {{ $labels.instance }}"
+          runbook: "docs/runbooks/prometheus-alerts.md"
+
+      - alert: HighErrorRate
+        expr: rate(oclushion_errors_total[5m]) / rate(oclushion_requests_total[5m]) > 0.05
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Error rate > 5% for {{ $labels.job }}"
+          runbook: "docs/runbooks/sentry-alerts.md"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="control-api"}[5m])) by (le)) > 1.0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "p95 latency > 1s on control-api"
+
+      - alert: BackupStale
+        expr: time() - oclushion_last_backup_timestamp_seconds > 86400
+        for: 1h
+        labels: { severity: critical }
+        annotations:
+          summary: "No database backup in > 24 hours"
+          runbook: "docs/runbooks/prometheus-alerts.md"
+
+      - alert: RateLimitThreshold
+        expr: rate(oclushion_rate_limit_hits_total[5m]) > 100
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "High rate limit blocking (>100/min) on {{ $labels.job }}"
+
+      - alert: MFAFailureRate
+        expr: rate(oclushion_mfa_failure_total[5m]) / rate(oclushion_mfa_challenges_total[5m]) > 0.5
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "MFA failure rate > 50% — possible credential stuffing"
+
+      - alert: HighLoginFailureRate
+        expr: rate(oclushion_login_failure_total[5m]) > 20
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "High login failure rate (>20/min) — possible brute force"
+
+      - alert: DBConnectionsExhausted
+        expr: pg_stat_activity_count{datname="oclushion"} > pg_stat_activity_max{datname="oclushion"} * 0.8
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "DB connection pool > 80% utilized"
+
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Less than 10% disk space remaining"

@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "metadata": {
+    "author": "system",
+    "tags": ["rapid", "prototype", "minimal"],
+    "description": "Rapid prototype pipeline: Builder → QA (skips review)",
+    "version": "1.0.0"
+  },
+  "nodes": [
+    {
+      "id": "a1b2c3d4-3000-4000-8000-000000000001",
+      "node_type": "Agent",
+      "config": {
+        "role": "Builder",
+        "model": "Claude",
+        "system_prompt": "You are a builder. Rapidly implement the feature."
+      },
+      "position": [100.0, 100.0],
+      "ports": []
+    },
+    {
+      "id": "a1b2c3d4-3000-4000-8000-000000000002",
+      "node_type": "Agent",
+      "config": {
+        "role": "Qa",
+        "model": "Gpt",
+        "system_prompt": "You are a QA engineer. Quickly test the implementation."
+      },
+      "position": [300.0, 100.0],
+      "ports": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "b1c2d3e4-3000-4000-8000-000000000001",
+      "source_node": "a1b2c3d4-3000-4000-8000-000000000001",
+      "source_port": "00000000-0000-0000-0000-000000000000",
+      "target_node": "a1b2c3d4-3000-4000-8000-000000000002",
+      "target_port": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "created_at": "2026-06-14T00:00:00Z",
+  "updated_at": "2026-06-14T00:00:00Z"
+}

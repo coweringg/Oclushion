@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: control-api
+    static_configs:
+      - targets: ["control-api:8082"]
+    metrics_path: /metrics
+
+  - job_name: proxy
+    static_configs:
+      - targets: ["sano-shield-proxy:8080"]
+    metrics_path: /metrics
+
+  - job_name: data-gateway
+    static_configs:
+      - targets: ["sano-shield-data-gateway:8083"]
+    metrics_path: /metrics
+
+  - job_name: postgres
+    static_configs:
+      - targets: ["postgres:9187"]
+
+  - job_name: node
+    static_configs:
+      - targets: ["localhost:9100"]

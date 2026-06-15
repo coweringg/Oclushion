@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "metadata": {
+    "author": "system",
+    "tags": ["security", "pipeline", "review"],
+    "description": "Security-focused pipeline: Architect → Builder → Security → Reviewer → QA",
+    "version": "1.0.0"
+  },
+  "nodes": [
+    {
+      "id": "a1b2c3d4-1000-4000-8000-000000000001",
+      "node_type": "Agent",
+      "config": {
+        "role": "Architect",
+        "model": "Claude",
+        "system_prompt": "You are a software architect. Design with security in mind."
+      },
+      "position": [100.0, 100.0],
+      "ports": []
+    },
+    {
+      "id": "a1b2c3d4-1000-4000-8000-000000000002",
+      "node_type": "Agent",
+      "config": {
+        "role": "Builder",
+        "model": "Claude",
+        "system_prompt": "You are a builder. Implement secure code."
+      },
+      "position": [300.0, 100.0],
+      "ports": []
+    },
+    {
+      "id": "a1b2c3d4-1000-4000-8000-000000000003",
+      "node_type": "Agent",
+      "config": {
+        "role": "Security",
+        "model": "Gpt",
+        "system_prompt": "You are a security engineer. Audit the code for vulnerabilities."
+      },
+      "position": [500.0, 100.0],
+      "ports": []
+    },
+    {
+      "id": "a1b2c3d4-1000-4000-8000-000000000004",
+      "node_type": "Agent",
+      "config": {
+        "role": "Reviewer",
+        "model": "Gpt",
+        "system_prompt": "You are a code reviewer. Review the implementation and security fixes."
+      },
+      "position": [700.0, 100.0],
+      "ports": []
+    },
+    {
+      "id": "a1b2c3d4-1000-4000-8000-000000000005",
+      "node_type": "Agent",
+      "config": {
+        "role": "Qa",
+        "model": "Gemini",
+        "system_prompt": "You are a QA engineer. Test security and functionality."
+      },
+      "position": [900.0, 100.0],
+      "ports": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "b1c2d3e4-2000-4000-8000-000000000001",
+      "source_node": "a1b2c3d4-1000-4000-8000-000000000001",
+      "source_port": "00000000-0000-0000-0000-000000000000",
+      "target_node": "a1b2c3d4-1000-4000-8000-000000000002",
+      "target_port": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "b1c2d3e4-2000-4000-8000-000000000002",
+      "source_node": "a1b2c3d4-1000-4000-8000-000000000002",
+      "source_port": "00000000-0000-0000-0000-000000000000",
+      "target_node": "a1b2c3d4-1000-4000-8000-000000000003",
+      "target_port": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "b1c2d3e4-2000-4000-8000-000000000003",
+      "source_node": "a1b2c3d4-1000-4000-8000-000000000003",
+      "source_port": "00000000-0000-0000-0000-000000000000",
+      "target_node": "a1b2c3d4-1000-4000-8000-000000000004",
+      "target_port": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "id": "b1c2d3e4-2000-4000-8000-000000000004",
+      "source_node": "a1b2c3d4-1000-4000-8000-000000000004",
+      "source_port": "00000000-0000-0000-0000-000000000000",
+      "target_node": "a1b2c3d4-1000-4000-8000-000000000005",
+      "target_port": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "created_at": "2026-06-14T00:00:00Z",
+  "updated_at": "2026-06-14T00:00:00Z"
+}

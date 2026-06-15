@@ -1,0 +1,227 @@
+name: oclushion
+
+# Security: Internal network isolates backend services from direct public access.
+# Only the proxy and gateway should be exposed externally.
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  public:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: oclushion-postgres
+    environment:
+      POSTGRES_DB: oclushion
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?required}"
+      POSTGRES_USER: "${POSTGRES_USER:?required}"
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?required} -d oclushion"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./packages/sano-shield-proxy/sql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    user: "${POSTGRES_UID:-999}:${POSTGRES_GID:-999}"
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: oclushion-redis
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?required}"]
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?required}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: "${REDIS_UID:-999}"
+
+  sano-shield-pii-service:
+    build:
+      context: .
+      dockerfile: packages/sano-shield-pii-service/Dockerfile
+    container_name: oclushion-pii-service
+    ports:
+      - "127.0.0.1:8081:8081"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: "${PII_UID:-10001}"
+
+  sano-shield-proxy:
+    build:
+      context: .
+      dockerfile: packages/sano-shield-proxy/Dockerfile
+    container_name: oclushion-proxy
+    environment:
+      NODE_ENV: "${NODE_ENV:-production}"
+      DATABASE_URL: "${DATABASE_URL:?required}"
+      REDIS_URL: "${REDIS_URL:?required}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?required}"
+      PII_SERVICE_URL: "${PII_SERVICE_URL:?required}"
+      CONTROL_API_URL: "${CONTROL_API_URL:?required}"
+      CONTROL_API_INTERNAL_TOKEN: "${CONTROL_API_INTERNAL_TOKEN:?required}"
+      PROXY_POLICY_ORGANIZATION_IDS: "${PROXY_POLICY_ORGANIZATION_IDS:-}"
+      POLICY_SNAPSHOT_REFRESH_MS: "${POLICY_SNAPSHOT_REFRESH_MS:-30000}"
+      POLICY_SNAPSHOT_MAX_AGE_MS: "${POLICY_SNAPSHOT_MAX_AGE_MS:-120000}"
+      TOKEN_MAPPING_ENCRYPTION_KEY: "${TOKEN_MAPPING_ENCRYPTION_KEY:?required}"
+      TOKEN_MAPPING_TTL_SECONDS: 300
+      PROXY_PORT: 8080
+      PROXY_HOST: "0.0.0.0"
+      PROXY_ALLOWED_UPSTREAM_HOSTS: "${PROXY_ALLOWED_UPSTREAM_HOSTS:-api.openai.com,api.anthropic.com}"
+      OPENAI_UPSTREAM_BASE_URL: "${OPENAI_UPSTREAM_BASE_URL:-https://api.openai.com}"
+      ANTHROPIC_UPSTREAM_BASE_URL: "${ANTHROPIC_UPSTREAM_BASE_URL:-https://api.anthropic.com}"
+      ENABLE_AUDIT_LOG: "${ENABLE_AUDIT_LOG:-true}"
+      ENABLE_RATE_LIMITING: "${ENABLE_RATE_LIMITING:-true}"
+      PROXY_RATE_LIMIT_MAX: "${PROXY_RATE_LIMIT_MAX:-300}"
+      PROXY_MAX_BODY_BYTES: "${PROXY_MAX_BODY_BYTES:-1048576}"
+      PROXY_UPSTREAM_TIMEOUT_MS: "${PROXY_UPSTREAM_TIMEOUT_MS:-30000}"
+      PROXY_UPSTREAM_RETRY_MAX: "${PROXY_UPSTREAM_RETRY_MAX:-2}"
+      PROXY_IP_DENYLIST: "${PROXY_IP_DENYLIST:-}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: "${SENTRY_ENVIRONMENT:-development}"
+      SENTRY_RELEASE: "${SENTRY_RELEASE:-}"
+      SENTRY_TRACES_SAMPLE_RATE: "${SENTRY_TRACES_SAMPLE_RATE:-0.05}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      sano-shield-pii-service:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: "${PROXY_UID:-10001}"
+    tmpfs:
+      - /tmp
+
+  control-api:
+    build:
+      context: .
+      dockerfile: apps/control-api/Dockerfile
+    container_name: oclushion-control-api
+    environment:
+      NODE_ENV: "${NODE_ENV:-production}"
+      DATABASE_URL: "${DATABASE_URL:?required}"
+      CONTROL_API_HOST: "0.0.0.0"
+      CONTROL_API_PORT: "8082"
+      CONTROL_API_ADMIN_TOKEN: "${CONTROL_API_ADMIN_TOKEN:?required}"
+      CONTROL_API_INTERNAL_TOKEN: "${CONTROL_API_INTERNAL_TOKEN:?required}"
+      CONTROL_API_ENABLE_RATE_LIMITING: "${CONTROL_API_ENABLE_RATE_LIMITING:-true}"
+      CONTROL_API_RATE_LIMIT_MAX: "${CONTROL_API_RATE_LIMIT_MAX:-120}"
+      CONTROL_API_URL: "${CONTROL_API_URL:-http://control-api:8082}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:-}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
+      OCLUSHION_BILLING_SUCCESS_URL: "${OCLUSHION_BILLING_SUCCESS_URL:-https://oclushion.com/billing/success}"
+      OCLUSHION_BILLING_CANCEL_URL: "${OCLUSHION_BILLING_CANCEL_URL:-https://oclushion.com/billing/cancel}"
+      WORKOS_API_KEY: "${WORKOS_API_KEY:-}"
+      WORKOS_CLIENT_ID: "${WORKOS_CLIENT_ID:-}"
+      SENTRY_DSN: "${SENTRY_DSN:-}"
+      SENTRY_ENVIRONMENT: "${SENTRY_ENVIRONMENT:-production}"
+      SENTRY_RELEASE: "${SENTRY_RELEASE:-}"
+      SENTRY_TRACES_SAMPLE_RATE: "${SENTRY_TRACES_SAMPLE_RATE:-0.05}"
+      CATALOG_SECRET_KEY: "${CATALOG_SECRET_KEY:-}"
+      ADMIN_API_TOKEN: "${ADMIN_API_TOKEN:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${CONTROL_API_HOST_PORT:-8082}:8082"
+    networks:
+      - internal
+    restart: unless-stopped
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    user: "${CONTROL_API_UID:-10001}"
+
+  sano-shield-data-gateway:
+    build:
+      context: .
+      dockerfile: packages/sano-shield-data-gateway/Dockerfile
+    container_name: oclushion-data-gateway
+    environment:
+      NODE_ENV: "${NODE_ENV:-production}"
+      DATABASE_URL: "${DATABASE_URL:?required}"
+      DATA_SOURCE_DATABASE_URL: "${DATA_SOURCE_DATABASE_URL:?required}"
+      DATA_GATEWAY_HOST: "${DATA_GATEWAY_HOST:-0.0.0.0}"
+      DATA_GATEWAY_PORT: "${DATA_GATEWAY_PORT:-8083}"
+      DATA_GATEWAY_TOKEN: "${DATA_GATEWAY_TOKEN:?required}"
+      DATA_PROTECT_ENCRYPTION_KEY: "${DATA_PROTECT_ENCRYPTION_KEY:?required}"
+      DATA_GATEWAY_ENABLE_RATE_LIMITING: "${DATA_GATEWAY_ENABLE_RATE_LIMITING:-true}"
+      DATA_GATEWAY_RATE_LIMIT_MAX: "${DATA_GATEWAY_RATE_LIMIT_MAX:-120}"
+      DATA_GATEWAY_MAX_BODY_BYTES: "${DATA_GATEWAY_MAX_BODY_BYTES:-5242880}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    networks:
+      - internal
+      - public
+    restart: unless-stopped
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: "${GATEWAY_UID:-10001}"
+    tmpfs:
+      - /tmp
+
+volumes:
+  postgres-data:
+  redis-data:

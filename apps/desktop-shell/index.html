@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Oclushion desktop shell: AI-ready workspaces, Sano Shield privacy, repo intelligence and safe diffs."
+    />
+    <title>Oclushion</title>
+  </head>
+  <body>
+    <div class="oclushion-root">
+      <!-- 1. The Discord-Style Organization Sidebar -->
+      <nav id="org-sidebar" class="ocl-org-sidebar"></nav>
+
+      <!-- 1.5. The Activity Bar (IDE Side Tabs) -->
+      <nav id="activity-bar" class="ocl-activity-bar"></nav>
+
+      <!-- 2. The Context Pane (Split view for Rooms and Files) -->
+      <aside id="context-pane" class="ocl-context-pane">
+        <div id="rooms-panel" class="ocl-panel ocl-panel-top">
+          <!-- Rooms list renders here -->
+        </div>
+        <div class="ocl-resizer"></div>
+        <div id="file-explorer" class="ocl-panel ocl-panel-bottom">
+          <!-- File tree renders here -->
+        </div>
+      </aside>
+
+      <!-- 3. The Main App Area (Editor, OS Modules) -->
+      <main class="ocl-main-area">
+        <header class="ocl-top-bar">
+          <div id="ocl-menubar-mount"></div>
+          <div class="ocl-breadcrumb">
+            <span>Oclushion</span>
+            <span class="ocl-breadcrumb-sep">›</span>
+            <span>Frontend</span>
+            <span class="ocl-breadcrumb-sep">›</span>
+            <span>main</span>
+            <span class="ocl-breadcrumb-sep">›</span>
+            <span>src/app</span>
+          </div>
+          <div class="ocl-top-spacer"></div>
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div id="ocl-agi-switch-mount"></div>
+            <div id="ocl-analytics-mount"></div>
+            <div id="ocl-notifications-mount"></div>
+          </div>
+        </header>
+
+        <!-- OS Tabs Bar -->
+        <nav id="ocl-os-tabs-mount"></nav>
+
+        <!-- Dynamic View Port -->
+        <div id="ocl-view-port" class="ocl-view-port">
+          <!-- Editor is just one of the tabs now -->
+          <div id="app" class="ocl-view active"></div>
+
+          <!-- AGI Swarm Overlay -->
+          <div id="agi-swarm-overlay" class="agi-swarm-overlay"></div>
+          
+          <!-- Time Travel UI -->
+          <div id="time-travel-root" class="ocl-time-travel-mount"></div>
+        </div>
+      </main>
+      
+      <!-- Command Palette Mount -->
+      <div id="command-palette-root"></div>
+
+      <!-- Status Bar -->
+      <footer id="ocl-status-bar" class="ocl-status-bar"></footer>
+    </div>
+    
+    <div id="context-menu-root"></div>
+    <div id="toast-container" class="ocl-toast-container"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

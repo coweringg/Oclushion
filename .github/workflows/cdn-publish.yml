@@ -1,0 +1,150 @@
+name: CDN Publish — Marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'CDN environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+  push:
+    branches: [main]
+    paths:
+      - 'docker/data/marketplace/**'
+      - 'apps/desktop-shell/src/marketplace/fallback-catalog.ts'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-sign:
+    name: Build catalog + sign
+    runs-on: ubuntu-latest
+    outputs:
+      catalog_sha256: ${{ steps.sign.outputs.catalog_sha256 }}
+      catalog_hmac: ${{ steps.sign.outputs.catalog_hmac }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.1.3
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build marketplace catalog
+        id: build-catalog
+        run: |
+          node scripts/build-marketplace-catalog.mjs
+
+      - name: Compute SHA-256 for all artifacts
+        id: checksums
+        run: |
+          cd dist/marketplace
+          echo "catalog_sha256=$(sha256sum catalog.json | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          for f in skills/*.md tools/*.md; do
+            [ -f "$f" ] || continue
+            hash=$(sha256sum "$f" | cut -d' ' -f1)
+            echo "  $f: $hash"
+          done
+
+      - name: Sign catalog with HMAC-SHA256
+        id: sign
+        env:
+          HMAC_KEY: ${{ secrets.MARKETPLACE_HMAC_KEY }}
+        run: |
+          if [ -z "$HMAC_KEY" ]; then
+            echo "warning: MARKETPLACE_HMAC_KEY not set, generating unsigned catalog"
+            hmac="unsigned"
+          else
+            hmac=$(echo -n "$(cat dist/marketplace/catalog.json)" | \
+              openssl dgst -sha256 -hmac "$HMAC_KEY" | cut -d' ' -f2)
+          fi
+          echo "$hmac" > dist/marketplace/catalog.hmac
+          echo "catalog_hmac=$hmac" >> $GITHUB_OUTPUT
+          catalog_sha256=$(sha256sum dist/marketplace/catalog.json | cut -d' ' -f1)
+          echo "catalog_sha256=$catalog_sha256" >> $GITHUB_OUTPUT
+
+      - name: Upload marketplace artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: marketplace-catalog
+          path: dist/marketplace/
+          retention-days: 7
+
+  deploy-staging:
+    name: Deploy to staging CDN
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'staging'
+    needs: [build-and-sign]
+    runs-on: ubuntu-latest
+    environment: cdn-staging
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        with:
+          name: marketplace-catalog
+          path: dist/marketplace/
+
+      - name: Deploy to staging CDN
+        env:
+          CDN_DEPLOY_KEY: ${{ secrets.CDN_DEPLOY_KEY }}
+          CDN_STAGING_URL: ${{ secrets.CDN_STAGING_URL || 'https://cdn-staging.oclushion.com' }}
+        run: |
+          echo "Deploying to staging CDN: $CDN_STAGING_URL"
+          echo "Catalog SHA-256: ${{ needs.build-and-sign.outputs.catalog_sha256 }}"
+          echo "Catalog HMAC: ${{ needs.build-and-sign.outputs.catalog_hmac }}"
+          # Upload to CDN
+          # eg: rsync, aws s3 sync, curl, etc.
+          # aws s3 sync dist/marketplace/ s3://cdn-oclushion-staging/marketplace/v1/
+
+  deploy-production:
+    name: Deploy to production CDN
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.environment == 'production') ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    needs: [build-and-sign]
+    runs-on: ubuntu-latest
+    environment: cdn-production
+    steps:
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        with:
+          name: marketplace-catalog
+          path: dist/marketplace/
+
+      - name: Verify HMAC signature
+        env:
+          HMAC_KEY: ${{ secrets.MARKETPLACE_HMAC_KEY }}
+        run: |
+          if [ -z "$HMAC_KEY" ]; then
+            echo "error: MARKETPLACE_HMAC_KEY is required for production deploy"
+            exit 1
+          fi
+          expected=$(echo -n "$(cat dist/marketplace/catalog.json)" | \
+            openssl dgst -sha256 -hmac "$HMAC_KEY" | cut -d' ' -f2)
+          actual=$(cat dist/marketplace/catalog.hmac)
+          if [ "$expected" != "$actual" ]; then
+            echo "error: HMAC mismatch — catalog may be tampered"
+            exit 1
+          fi
+          echo "HMAC verification passed"
+
+      - name: Deploy to production CDN
+        env:
+          CDN_DEPLOY_KEY: ${{ secrets.CDN_DEPLOY_KEY }}
+          CDN_PRODUCTION_URL: ${{ secrets.CDN_PRODUCTION_URL || 'https://cdn.oclushion.com' }}
+        run: |
+          echo "Deploying to production CDN: $CDN_PRODUCTION_URL"
+          echo "Catalog SHA-256: ${{ needs.build-and-sign.outputs.catalog_sha256 }}"
+          echo "Catalog HMAC: ${{ needs.build-and-sign.outputs.catalog_hmac }}"
+          # Upload to CDN
+          # aws s3 sync dist/marketplace/ s3://cdn-oclushion-production/marketplace/v1/

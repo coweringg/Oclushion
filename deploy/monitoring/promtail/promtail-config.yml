@@ -1,0 +1,59 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: control-api
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: control-api
+          service: oclushion
+          __path__: /var/log/control-api/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            level: level
+            component: component
+            msg: message
+      - labels:
+          level: level
+          component: component
+
+  - job_name: control-api-worker
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: control-api-worker
+          service: oclushion
+          __path__: /var/log/control-worker/*.log
+
+  - job_name: sano-shield
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: sano-shield
+          service: oclushion
+          __path__: /var/log/sano-shield/*.log
+
+  - job_name: db-backup
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: db-backup
+          service: oclushion
+          __path__: /var/log/db-backup/*.log
+
+  - job_name: system
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: system
+          service: oclushion
+          __path__: /var/log/system/*.log

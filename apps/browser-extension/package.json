@@ -1,0 +1,18 @@
+{
+  "name": "@oclushion/browser-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @oclushion/browser-protect build && tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "lint": "eslint src test scripts",
+    "test": "pnpm --filter @oclushion/browser-protect build && vitest run",
+    "typecheck": "pnpm --filter @oclushion/browser-protect build && tsc --noEmit"
+  },
+  "dependencies": {
+    "@oclushion/browser-protect": "workspace:*"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@oclushion/agent-protect",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "sano": "./dist/cli.js",
+    "sano-agent": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@oclushion/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@oclushion/config": "workspace:*"
+  }
+}

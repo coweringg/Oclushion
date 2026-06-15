@@ -1,0 +1,13 @@
+apiVersion: v2
+name: control-api
+description: Oclushion Control API — enterprise auth, billing, SSO, audit, and policy management
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - oclushion
+  - control-api
+  - enterprise
+  - sso
+  - audit
+home: https://oclushion.com

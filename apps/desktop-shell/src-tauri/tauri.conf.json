@@ -1,0 +1,54 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Oclushion",
+  "version": "1.0.0",
+  "identifier": "com.oclushion.ide",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm vite --host 127.0.0.1",
+    "beforeBuildCommand": "pnpm build:web"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Oclushion",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1280,
+        "minHeight": 800,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self'; img-src 'self' asset: data:; script-src 'self'; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://api.oclushion.com https://cdn.oclushion.com https://api.vercel.com https://api.github.com https://api.linear.app https://api.notion.com"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://api.oclushion.com/v1/update/{{target}}/{{current_version}}"
+      ],
+      "pubkey": "dfb16ea1bca8eb13fd0687d042494e10165a500251094e3c01660bd2535e2421"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "Oclushion",
+    "category": "DeveloperTool",
+    "shortDescription": "AI-native desktop IDE for secure real-world software development.",
+    "longDescription": "Oclushion turns repositories into AI-ready workspaces with intelligent context, skillpacks, Sano Shield privacy, Safe Diff review, and enterprise audit trails.",
+    "copyright": "Copyright © 2026 Oclushion. All rights reserved.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

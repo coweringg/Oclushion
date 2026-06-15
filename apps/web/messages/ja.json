@@ -1,0 +1,337 @@
+{
+  "metadata": {
+    "title": "閉塞 |実際の開発のための AI IDE",
+    "description": "スキルパック、Sano Shield、Safe Diff、Kanban、エンタープライズ監査を使用して、あらゆるリポジトリを安全な AI エージェント ワークスペースに変えます。",
+    "keywords": {
+      "aiIde": "AIIDE",
+      "codeAgents": "コードエージェント",
+      "aiPrivacy": "AIのプライバシー",
+      "safeDiff": "安全な差分",
+      "professionalVibeCoding": "プロのバイブコーディング",
+      "brand": "Oclushion"
+    },
+    "openGraphDescription": "Skillpacks、Sano Shield、Safe Diff、および実際のリポジトリの調整エージェント。",
+    "twitterDescription": "リポジトリを安全な AI エージェント ワークスペースに変えます。"
+  },
+  "nav": {
+    "aria": "主要な",
+    "homeAria": "オクルーシオン ホーム",
+    "product": "製品",
+    "workflow": "ワークフロー",
+    "security": "安全",
+    "pricing": "価格設定",
+    "login": "ログイン",
+    "register": "登録する",
+    "requestDemo": "デモをリクエストする",
+    "resources": "????"
+  },
+  "hero": {
+    "kicker": "実際の開発のための AI IDE",
+    "headline": "AI と本番リポジトリの間のギャップを埋めます。",
+    "description": "Oclusion は、スマート コンテキスト、スキルパック、Sano Shield、Safe Diff、Kanban、エンタープライズ監査など、あらゆるリポジトリを AI エージェントのための安全なワークスペースに変えます。",
+    "startNow": "今すぐ始めましょう",
+    "seeWorkflow": "ワークフローを見る",
+    "line1": "Give AI a",
+    "line2Prefix": "real",
+    "line2Accent": "workspace.",
+    "featureSkillpacks": "Skillpacks",
+    "featureRepoGraph": "Repo Graph",
+    "featureTokenOptimizer": "Token Optimizer",
+    "featureSafeDiff": "Safe Diff",
+    "featureSanoProtection": "Sano Shield"
+  },
+  "mock": {
+    "skillpack": "Skillpack",
+    "seniorFullstack": "Senior Fullstack",
+    "securityCso": "Security CSO",
+    "postgresDba": "PostgreSQL DBA",
+    "safeDiff": "安全な差分: 3 つの提案が隔離されました",
+    "shield": "Sano Shield",
+    "enabled": "有効",
+    "context": "コンテキスト 82k / 128k",
+    "agentsReady": "6人のエージェントが準備完了"
+  },
+  "product": {
+    "kicker": "製品",
+    "headline": "プロフェッショナルなバイブコーディングのための完全な環境。",
+    "description": "編集者内でのチャットではありません。これは、Claude、OpenAI、OpenRouter、Ollama、およびローカル モデル上の実行、コンテキスト、セキュリティ層です。"
+  },
+  "features": {
+    "items": [
+      {
+        "eyebrow": "01",
+        "title": "Sano Shield - Native AI Privacy",
+        "copy": "Tokenizes emails, API keys, credit cards, and access tokens before data leaves your machine. Active in chat, agents, voice, MCP context, and terminal output."
+      },
+      {
+        "eyebrow": "02",
+        "title": "Dual Terminal - You and the Agent, Separated",
+        "copy": "Two isolated terminals in one panel: yours is fully interactive and multi-tab, while the AI terminal is read-only output you can watch and interrupt with Ctrl+C."
+      },
+      {
+        "eyebrow": "03",
+        "title": "Persistent Multi-Chat History",
+        "copy": "Every chat session is stored in local SQLite, grouped by date, and never auto-deleted. The AI can spawn sub-chats for parallel agent workloads."
+      },
+      {
+        "eyebrow": "04",
+        "title": "Safe Diff + Fast Apply + Instant Revert",
+        "copy": "Every AI proposal becomes a reviewable diff. Accept, reject, explain, write to disk with RAM snapshots, and instantly revert protected changes."
+      },
+      {
+        "eyebrow": "05",
+        "title": "Role-Based Agents with File Ownership",
+        "copy": "Architect, Builder, Reviewer, Security, QA, and Docs agents run sequentially or in parallel while file ownership locks prevent write conflicts."
+      },
+      {
+        "eyebrow": "06",
+        "title": "Skillpack Marketplace - Verified Behaviors",
+        "copy": "Install SHA-256 verified AI behaviors scoped by role, then inject them directly into the prompt builder as active workspace rules."
+      },
+      {
+        "eyebrow": "07",
+        "title": "Voice Input + Prompt Enhancer",
+        "copy": "Speak instructions through Whisper with Sano Shield active, then turn rough prompts into precise, stack-aware instructions."
+      },
+      {
+        "eyebrow": "08",
+        "title": "Kanban to Agent Handoff",
+        "copy": "Create tasks in the built-in Kanban board and hand them to the Agent Orchestrator. Completed work returns as Safe Diff proposals."
+      },
+      {
+        "eyebrow": "09",
+        "title": "Multiplayer Collaboration",
+        "copy": "Real-time collaborative workspace powered by Yjs and y-websocket with presence awareness for teams and AI-assisted workflows."
+      },
+      {
+        "eyebrow": "10",
+        "title": "Deploy + Rollback from the IDE",
+        "copy": "Push to git, trigger Vercel or GitHub Actions deploys, run health checks, and rollback without leaving Oclushion."
+      }
+    ],
+    "kicker": "Features",
+    "headlinePrefix": "The AI IDE stack built for",
+    "headlineAccent": "real development.",
+    "description": "Oclushion brings privacy, agent execution, persistent context, reviewable changes and deployment workflows into one desktop IDE.",
+    "learnMore": "See workflow"
+  },
+  "workflow": {
+    "kicker": "Workflow",
+    "headline": "タスクから承認された変更まで、混乱なく。",
+    "steps": [
+      {
+        "title": "Open repo",
+        "copy": "Select a local repository and let Oclushion scan the structure."
+      },
+      {
+        "title": "Choose profile",
+        "copy": "Activate the skillpack that matches the work you want done."
+      },
+      {
+        "title": "Sanitize context",
+        "copy": "Sano Shield masks secrets before context reaches a model."
+      },
+      {
+        "title": "Review diff",
+        "copy": "Safe Diff shows proposed code and commands before applying them."
+      },
+      {
+        "title": "Apply or revert",
+        "copy": "Approve changes, run checks and revert quickly when needed."
+      }
+    ],
+    "headlinePrefix": "From repo context to approved change,",
+    "headlineAccent": "under your control."
+  },
+  "security": {
+    "kicker": "Sano Shield",
+    "headline": "AI が偶然に秘密を受け取ることはありません。",
+    "description": "Sano Shield detects common secrets and sensitive values in prompts and context before data is sent to external AI providers.",
+    "headlinePrefix": "AI never receives secrets",
+    "headlineAccent": "by accident.",
+    "benefits": [
+      "Masks secrets before model calls",
+      "Keeps original values local for restoration",
+      "Records security-relevant actions in the audit trail"
+    ],
+    "cta": "See Safe Diff",
+    "table": {
+      "key": "Key",
+      "value": "Detected value",
+      "status": "Status"
+    },
+    "rows": [
+      {
+        "key": "API_KEY",
+        "value": "sk_live_51H8************************",
+        "status": "Masked"
+      },
+      {
+        "key": "EMAIL",
+        "value": "admin@company.com ? [EMAIL_0]",
+        "status": "Masked"
+      },
+      {
+        "key": "JWT_TOKEN",
+        "value": "eyJhbGciOiJIUzI1NiIs... ? [SECRET_0]",
+        "status": "Masked"
+      },
+      {
+        "key": "PRIVATE_KEY",
+        "value": "----BEGIN PRIVATE KEY---- ? [SECRET_1]",
+        "status": "Masked"
+      }
+    ],
+    "stats": {
+      "detected": "Detected",
+      "masked": "Masked",
+      "protected": "Protected",
+      "audited": "Audited"
+    }
+  },
+  "pricing": {
+    "kicker": "Pricing",
+    "headline": "Clear plans to go from trial to production.",
+    "description": "The landing reflects the current business model: Free for trying the IDE, Pro for advanced local AI workflows, and Teams/Enterprise for shared controls and audit.",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "cadence": "mo",
+        "description": "For testing Oclushion locally with essential AI workspace protection.",
+        "cta": "Get started"
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$20",
+        "cadence": "mo",
+        "description": "For solo developers who want voice, Fast Apply, richer context and advanced automation.",
+        "cta": "Start Pro trial",
+        "badge": "Most popular"
+      },
+      "teams": {
+        "name": "Teams / Enterprise",
+        "price": "$50+",
+        "cadence": "mo",
+        "description": "For organizations that need shared policies, audit visibility and enterprise controls.",
+        "cta": "Contact sales"
+      }
+    },
+    "features": {
+      "classicBuilder": "Local desktop shell",
+      "safeDiff": "Safe Diff review flow",
+      "sanoShield": "Sano Shield enabled",
+      "voice": "BYOK model routing",
+      "fastApply": "Basic skillpacks",
+      "livePreviewGod": "Marketplace browsing",
+      "multiplayerShipper": "Safe Diff quarantine",
+      "everythingFree": "Everything in Free",
+      "whisper": "Voice to Code entitlement",
+      "tabEnhance": "Auto-prompt enhancer",
+      "fastApplyDisk": "Fast Apply & Instant Revert",
+      "liveGod": "Live Preview and God Mode gates",
+      "sqliteMemory": "Persistent local memory",
+      "multiAgent": "Custom projects",
+      "collabShipper": "Full multi-agent",
+      "everythingPro": "Everything in Pro",
+      "multiplayerLive": "Shared team workspaces",
+      "shipperRollbacks": "Deployment workflow controls",
+      "auditLogs": "Enterprise audit sync",
+      "sharedPolicies": "Shared policies and permissions",
+      "prioritySupport": "Priority support path"
+    }
+  },
+  "cta": {
+    "tagline": "Try the current Oclushion build",
+    "headline": "Use the IDE locally, protect your context and approve every AI change.",
+    "createAccount": "Create account",
+    "headlinePrefix": "Use the IDE locally, ",
+    "headlineAccentOne": "protect",
+    "headlineMiddle": " your context, and ",
+    "headlineAccentTwo": "approve",
+    "headlineSuffix": " every AI change.",
+    "benefits": [
+      "Local-first workspace",
+      "Sano Shield protection",
+      "Safe Diff approvals",
+      "BYOK or managed credits"
+    ]
+  },
+  "languageSwitcher": {
+    "label": "言語"
+  },
+  "structuredData": {
+    "description": "リアルリポジトリ、スキルパック、Sano Shield、Safe Diff、マルチエージェント、エンタープライズ監査用の AI デスクトップ IDE。",
+    "features": [
+      "マルチエージェントのワークフロー",
+      "プライバシー保護のための佐野シールド",
+      "安全な差分とコマンド隔離",
+      "かんばんAIビルダー",
+      "GitHub、Linear、Notion を使用した MCP"
+    ]
+  },
+  "trust": {
+    "enterpriseLine1": "Enterprise grade",
+    "enterpriseLine2": "by design",
+    "lovedLine1": "Loved by developers",
+    "lovedLine2": "and AI teams",
+    "privateLine1": "Your data.",
+    "privateLine2": "Always private."
+  },
+  "showcase": {
+    "kicker": "Safe Diff",
+    "headline": "Quarantine every change before it touches production.",
+    "review": "Review",
+    "apply": "Apply Patch",
+    "reject": "Reject",
+    "headlinePrefix": "Quarantine every change before it touches",
+    "headlineAccent": "production.",
+    "description": "AI output is not written blindly. Oclushion separates conversational answers from proposed code and commands, then routes them into Safe Diff for human approval.",
+    "steps": [
+      {
+        "title": "Code proposals are isolated",
+        "copy": "Generated code blocks become reviewable proposals instead of automatic writes."
+      },
+      {
+        "title": "Commands stay quarantined",
+        "copy": "Shell commands wait for explicit approval before execution."
+      },
+      {
+        "title": "Fast Apply keeps rollback state",
+        "copy": "Approved edits can be applied quickly while retaining revert data."
+      },
+      {
+        "title": "Audit records the action",
+        "copy": "Approvals, rejects and command runs are written to the local audit trail."
+      }
+    ],
+    "cta": "See how it works",
+    "viewFile": "View file",
+    "filesChanged": "files changed",
+    "additions": "additions",
+    "deletions": "deletions",
+    "runChecks": "Run checks",
+    "preview": "Preview",
+    "approve": "Approve & merge"
+  },
+  "footer": {
+    "copyright": "Copyright 2026 Oclushion. AI workspace security and developer automation.",
+    "product": "Product",
+    "features": "Features",
+    "security": "Security",
+    "pricing": "Pricing",
+    "resources": "Resources",
+    "status": "Health check",
+    "bottomLeft": "Built around privacy and controlled AI changes.",
+    "bottomRight": "Oclushion uses Sano Shield internally.",
+    "workflow": "Workflow",
+    "safeDiff": "Safe Diff",
+    "access": "Access",
+    "demo": "Request demo",
+    "login": "Login",
+    "register": "Register",
+    "noteTitle": "Current product scope",
+    "noteCopy": "Oclushion currently includes the landing page, desktop IDE shell, native auth, Sano Shield, Safe Diff, real repository context, skillpacks, model routing, marketplace, audit and pricing gates.",
+    "noteCta": "Request access"
+  }
+}

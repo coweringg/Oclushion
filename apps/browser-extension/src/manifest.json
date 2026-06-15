@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Sano Browser Protect",
+  "version": "1.0.0",
+  "description": "Protege prompts sensibles en portales publicos de IA antes del envio.",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://copilot.microsoft.com/*",
+    "http://127.0.0.1:8082/*",
+    "http://localhost:8082/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Sano Browser Protect",
+    "default_popup": "popup.html"
+  }
+}

@@ -1,0 +1,66 @@
+.marketplace-locked-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.marketplace-lock-reason {
+  font-size: 11px;
+  color: var(--ocl-gold, #ffd66c);
+  opacity: 0.85;
+}
+
+.marketplace-card.locked {
+  opacity: 0.74;
+  border-color: rgba(255, 214, 108, 0.24);
+}
+
+.skill-suggestion-eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ocl-accent, #7b4dff);
+  font-weight: 700;
+}
+
+.skill-suggestion-reason {
+  font-size: 13px;
+  color: #c8d1df;
+  margin-top: 4px;
+}
+
+.skill-suggestion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skill-suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.skill-suggestion-tier {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: var(--ocl-accent, #7b4dff);
+}
+
+.skill-suggestion-confidence {
+  color: var(--ocl-dim, #6b7a94);
+}
+
+.skill-suggestion-keywords {
+  font-size: 11px;
+  color: var(--ocl-dim, #6b7a94);
+}
+
+.skill-suggestion-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}

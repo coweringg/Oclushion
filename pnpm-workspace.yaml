@@ -1,0 +1,39 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+minimumReleaseAgeExclude:
+  - "@typescript-eslint/eslint-plugin@8.60.0"
+  - "@typescript-eslint/parser@8.60.0"
+  - "@typescript-eslint/project-service@8.60.0"
+  - "@typescript-eslint/scope-manager@8.60.0"
+  - "@typescript-eslint/tsconfig-utils@8.60.0"
+  - "@typescript-eslint/type-utils@8.60.0"
+  - "@typescript-eslint/types@8.60.0"
+  - "@typescript-eslint/typescript-estree@8.60.0"
+  - "@typescript-eslint/utils@8.60.0"
+  - "@typescript-eslint/visitor-keys@8.60.0"
+  - typescript-eslint@8.60.0
+  - "@sentry/core@10.54.0"
+  - "@sentry/node-core@10.54.0"
+  - "@sentry/node@10.54.0"
+  - "@sentry/opentelemetry@10.54.0"
+  - "@sentry-internal/browser-utils@10.54.0"
+  - "@sentry-internal/feedback@10.54.0"
+  - "@sentry-internal/replay-canvas@10.54.0"
+  - "@sentry-internal/replay@10.54.0"
+  - "@sentry/browser@10.54.0"
+  - "@sentry/nextjs@10.54.0"
+  - "@sentry/react@10.54.0"
+  - "@sentry/vercel-edge@10.54.0"
+allowBuilds:
+  '@parcel/watcher': true
+  "@sentry/cli": true
+  '@swc/core': true
+  esbuild: true
+  msgpackr-extract: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true
+overrides:
+  postcss: ">=8.5.10 <9"

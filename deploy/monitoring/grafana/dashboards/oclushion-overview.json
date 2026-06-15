@@ -1,0 +1,200 @@
+{
+  "title": "Oclushion - Production Overview",
+  "uid": "oclushion-overview",
+  "schemaVersion": 39,
+  "version": 3,
+  "tags": ["oclushion", "production"],
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "title": "SLO: Uptime (30d)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 0, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto" },
+      "targets": [{
+        "expr": "avg(up{job=~\"control-api|desktop-shell|proxy|gateway\"}) * 100",
+        "legendFormat": "Uptime %"
+      }]
+    },
+    {
+      "title": "SLO: API Latency p95 (ms)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 3, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"control-api\"}[5m])) by (le)) * 1000",
+        "legendFormat": "p95"
+      }],
+      "thresholds": [{ "value": 200, "color": "green" }, { "value": 500, "color": "yellow" }, { "value": 1000, "color": "red" }]
+    },
+    {
+      "title": "SLO: Error Rate (5m)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 6, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "sum(rate(oclushion_errors_total[5m])) / sum(rate(oclushion_requests_total[5m])) * 100",
+        "legendFormat": "Error %"
+      }],
+      "thresholds": [{ "value": 0.1, "color": "green" }, { "value": 1, "color": "yellow" }, { "value": 5, "color": "red" }]
+    },
+    {
+      "title": "SLO: Error Budget (30d)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 9, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "1 - (sum(rate(oclushion_errors_total[30d])) / sum(rate(oclushion_requests_total[30d])) / 0.001)",
+        "legendFormat": "Budget Remaining"
+      }]
+    },
+    {
+      "title": "Active Users (5m)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 12, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "count(count by (user_id) (oclushion_events_total{job=\"control-api\"}[5m]))"
+      }]
+    },
+    {
+      "title": "Login Attempts (5m)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 15, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "sum(rate(oclushion_login_attempts_total[5m]))"
+      }]
+    },
+    {
+      "title": "MFA Usage Rate",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 18, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "sum(rate(oclushion_mfa_challenges_total[5m])) / sum(rate(oclushion_login_attempts_total[5m])) * 100"
+      }]
+    },
+    {
+      "title": "Locked Accounts",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 3, "x": 21, "y": 0 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "oclushion_locked_accounts_total"
+      }],
+      "thresholds": [{ "value": 0, "color": "green" }, { "value": 5, "color": "yellow" }, { "value": 20, "color": "red" }]
+    },
+    {
+      "title": "Requests / min by Service",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        { "expr": "rate(oclushion_requests_total{job=\"control-api\"}[1m])", "legendFormat": "control-api" },
+        { "expr": "rate(oclushion_requests_total{job=\"desktop-shell\"}[1m])", "legendFormat": "desktop-shell" },
+        { "expr": "rate(oclushion_requests_total{job=\"proxy\"}[1m])", "legendFormat": "proxy" },
+        { "expr": "rate(oclushion_requests_total{job=\"gateway\"}[1m])", "legendFormat": "gateway" }
+      ]
+    },
+    {
+      "title": "API Latency p50 / p95 / p99",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"control-api\"}[5m])) by (le)) * 1000", "legendFormat": "p50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"control-api\"}[5m])) by (le)) * 1000", "legendFormat": "p95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"control-api\"}[5m])) by (le)) * 1000", "legendFormat": "p99" }
+      ]
+    },
+    {
+      "title": "Error Rate by Service",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        { "expr": "rate(oclushion_errors_total{job=\"control-api\"}[5m])", "legendFormat": "control-api" },
+        { "expr": "rate(oclushion_errors_total{job=\"desktop-shell\"}[5m])", "legendFormat": "desktop-shell" },
+        { "expr": "rate(oclushion_errors_total{job=\"proxy\"}[5m])", "legendFormat": "proxy" }
+      ]
+    },
+    {
+      "title": "LLM Tokens / min",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        { "expr": "rate(oclushion_llm_tokens_total{provider=\"openai\"}[1m])", "legendFormat": "OpenAI" },
+        { "expr": "rate(oclushion_llm_tokens_total{provider=\"anthropic\"}[1m])", "legendFormat": "Anthropic" }
+      ]
+    },
+    {
+      "title": "DB Connections",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        { "expr": "pg_stat_activity_count{datname=\"oclushion\"}", "legendFormat": "Active" },
+        { "expr": "pg_stat_activity_max{datname=\"oclushion\"}", "legendFormat": "Max" }
+      ]
+    },
+    {
+      "title": "Backup Age (hours)",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 4, "x": 8, "y": 20 },
+      "options": { "colorMode": "background", "graphMode": "area" },
+      "targets": [{
+        "expr": "time() - oclushion_last_backup_timestamp_seconds",
+        "legendFormat": "Age"
+      }],
+      "thresholds": [{ "value": 1, "color": "green" }, { "value": 6, "color": "yellow" }, { "value": 24, "color": "red" }]
+    },
+    {
+      "title": "Auth Events",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 20 },
+      "targets": [
+        { "expr": "rate(oclushion_login_success_total[5m])", "legendFormat": "Success" },
+        { "expr": "rate(oclushion_login_failure_total[5m])", "legendFormat": "Failure" },
+        { "expr": "rate(oclushion_mfa_challenges_total[5m])", "legendFormat": "MFA Challenges" },
+        { "expr": "rate(oclushion_mfa_recovery_used_total[5m])", "legendFormat": "Recovery Used" }
+      ]
+    },
+    {
+      "title": "Audit Events / min",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 26 },
+      "targets": [{
+        "expr": "rate(oclushion_audit_events_total[1m])",
+        "legendFormat": "All Events"
+      }]
+    },
+    {
+      "title": "Rate Limit Hits",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 26 },
+      "targets": [{
+        "expr": "rate(oclushion_rate_limit_hits_total[5m])",
+        "legendFormat": "Blocked Requests"
+      }],
+      "thresholds": [{ "value": 10, "color": "green" }, { "value": 50, "color": "yellow" }, { "value": 100, "color": "red" }]
+    },
+    {
+      "title": "Credits Consumed / min",
+      "type": "graph",
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 26 },
+      "targets": [{
+        "expr": "rate(oclushion_credits_consumed_total[1m])",
+        "legendFormat": "Credits"
+      }]
+    }
+  ],
+  "rows": [],
+  "templating": {
+    "list": [
+      { "name": "datasource", "type": "datasource", "query": "prometheus", "current": { "value": "prometheus" } }
+    ]
+  },
+  "annotations": {
+    "list": [
+      { "name": "Deploy", "type": "event", "datasource": "prometheus", "expr": "oclushion_deploy_timestamp_seconds" },
+      { "name": "Alert", "type": "event", "datasource": "prometheus", "expr": "ALERTS{severity=~\"critical|warning\"}" }
+    ]
+  }
+}

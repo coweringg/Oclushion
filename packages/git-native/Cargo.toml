@@ -1,0 +1,38 @@
+[package]
+name = "git-native"
+version = "0.1.0"
+edition = "2021"
+description = "Native Git operations via gitoxide (gix) for Oclushion: diff, branch, commit, status, blame, remote, worktree"
+
+[lib]
+name = "git_native"
+
+[dependencies]
+gix = "0.68"
+gix-diff = "0.48"
+gix-status = "0.13"
+gix-blame = "0.3"
+gix-traverse = "0.43"
+gix-object = "0.46"
+gix-commitgraph = "0.26"
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tempfile = "3"
+criterion = "0.5"
+
+[[bench]]
+name = "diff_bench"
+harness = false
+
+[[bench]]
+name = "status_bench"
+harness = false
+
+[[bench]]
+name = "blame_bench"
+harness = false

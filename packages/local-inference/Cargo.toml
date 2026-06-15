@@ -1,0 +1,32 @@
+[package]
+name = "local-inference"
+version = "0.1.0"
+edition = "2021"
+description = "Local inference sidecar management for Oclushion: llama.cpp process, model registry, hardware detection, FIM"
+
+[lib]
+name = "local_inference"
+
+[dependencies]
+thiserror = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+reqwest = { version = "0.12", features = ["json", "stream", "blocking"] }
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }
+hex = "0.4"
+sys-info = "0.9"
+
+[dev-dependencies]
+tempfile = "3"
+criterion = "0.5"
+
+[[bench]]
+name = "inference_latency"
+harness = false
+
+[[bench]]
+name = "throughput"
+harness = false
