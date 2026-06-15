@@ -12,15 +12,7 @@ interface ChatMessage {
   timestamp: string;
 }
 
-interface DemoState {
-  session: ChatMessage[];
-  isLoading: boolean;
-  demoCount: number;       // guard rails: max 10 prompts / day
-  hasAcceptedTos: boolean;
-}
-
 const MAX_DEMO_PROMPTS = 10;
-const STORAGE_KEY = "oclushion_demo_v1";
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

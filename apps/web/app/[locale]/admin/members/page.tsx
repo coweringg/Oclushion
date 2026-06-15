@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from "react";
 import { useAdminAuth } from "../../../../lib/auth-context";
-import { apiGet, apiPost, apiDelete, type ApiError } from "../../../../lib/api-client";
+import { apiGet, apiPost, apiDelete } from "../../../../lib/api-client";
 
 type OrgMember = {
   userId: string;

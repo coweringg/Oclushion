@@ -22,14 +22,28 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Set up compose env (CI defaults)
+        run: |
+          cat > /tmp/ci.env <<'EOF'
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          REDIS_PASSWORD=redispass
+          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
+          REDIS_URL=redis://:redispass@127.0.0.1:6379
+          PII_SERVICE_URL=http://pii:8081
+          CONTROL_API_URL=http://control-api:8082
+          CONTROL_API_INTERNAL_TOKEN=ci-internal-token
+          TOKEN_MAPPING_ENCRYPTION_KEY=ci-token-mapping-key-123456
+          CONTROL_API_ADMIN_TOKEN=ci-admin-token
+          DATA_SOURCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
+          DATA_GATEWAY_TOKEN=ci-gateway-token
+          DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
+          EOF
       - run: pnpm lint
       - run: pnpm typecheck
       - run: node scripts/validate-i18n.mjs
       - run: pnpm audit --audit-level=high
-      - run: docker compose up -d postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+      - run: docker compose --env-file /tmp/ci.env up -d postgres
       - run: pnpm test
         env:
           CONTROL_API_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
@@ -68,12 +82,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: python -m pip install "./packages/sano-shield-pii-service[test]"
       - run: pnpm exec playwright install --with-deps chromium
-      - run: docker compose up -d postgres redis
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          REDIS_PASSWORD: redispass
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
+      - name: Set up compose env (CI defaults)
+        run: |
+          cat > /tmp/ci.env <<'EOF'
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          REDIS_PASSWORD=redispass
+          DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
+          REDIS_URL=redis://:redispass@127.0.0.1:6379
+          PII_SERVICE_URL=http://pii:8081
+          CONTROL_API_URL=http://control-api:8082
+          CONTROL_API_INTERNAL_TOKEN=ci-internal-token
+          TOKEN_MAPPING_ENCRYPTION_KEY=ci-token-mapping-key-123456
+          CONTROL_API_ADMIN_TOKEN=ci-admin-token
+          DATA_SOURCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
+          DATA_GATEWAY_TOKEN=ci-gateway-token
+          DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
+          EOF
+      - run: docker compose --env-file /tmp/ci.env up -d postgres redis
       - run: pnpm test:e2e
 
   terraform:
@@ -108,19 +134,28 @@ jobs:
       - name: Start web target
         run: |
           cd apps/web
+          echo "PWD: $(pwd)"
+          echo "ls .next/standalone:"
+          ls -laR .next/standalone/ 2>&1 | head -40 || echo "(no .next/standalone)"
           SERVER=$(find .next/standalone -name server.js -type f 2>/dev/null | head -1)
           if [ -z "$SERVER" ]; then
-            echo "server.js not found in .next/standalone"
-            find .next/standalone -type f -name "*.js" | head -20
+            echo "server.js not found — searching whole .next"
+            find .next -name "server.js" -type f 2>/dev/null | head -10
             exit 1
           fi
-          node "$SERVER" > /tmp/oclushion-web.log 2>&1 &
+          echo "Found server: $SERVER"
+          node "$SERVER" &> /tmp/oclushion-web.log &
+          echo "PID: $!"
           cd ${{ github.workspace }}
           for attempt in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then exit 0; fi
+            if curl --fail --silent --max-time 2 http://127.0.0.1:3000/login > /dev/null 2>&1; then
+              echo "Server ready on attempt $attempt"
+              exit 0
+            fi
             sleep 2
           done
-          cat /tmp/oclushion-web.log
+          echo "Server failed to start. Log:"
+          cat /tmp/oclushion-web.log 2>/dev/null || echo "(no log)"
           exit 1
       - name: Run ZAP baseline
         run: |
