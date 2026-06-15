@@ -155,7 +155,7 @@ jobs:
             -t http://127.0.0.1:3000 \
             -r zap-baseline.html \
             -J zap-baseline.json \
-            -m 2
+            -m 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
