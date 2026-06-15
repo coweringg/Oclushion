@@ -2,9 +2,9 @@ module "network" {
   source = "../../modules/network"
 
   environment = "production"
-  vpc_cidr   = "10.0.0.0/16"
+  vpc_cidr    = "10.0.0.0/16"
 
-  availability_zones  = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  availability_zones   = ["us-east-1a", "us-east-1b", "us-east-1c"]
   private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
@@ -18,10 +18,10 @@ module "network" {
 module "postgres" {
   source = "../../modules/postgres"
 
-  environment       = "production"
-  instance_class    = "db.t4g.small"
-  allocated_storage = 20
-  multi_az          = true
+  environment           = "production"
+  instance_class        = "db.t4g.small"
+  allocated_storage     = 20
+  multi_az              = true
   backup_retention_days = 30
   deletion_protection   = true
 
@@ -39,8 +39,8 @@ module "postgres" {
 module "redis" {
   source = "../../modules/redis"
 
-  environment    = "production"
-  node_type      = "cache.t4g.small"
+  environment     = "production"
+  node_type       = "cache.t4g.small"
   num_cache_nodes = 2
 
   subnet_ids        = module.network.private_subnet_ids

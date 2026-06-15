@@ -5,12 +5,12 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      "**/node_modulesnode_modules/**",
-      "**/.next.next/**",
-      "**/distdist/**",
-      "**/coveragecoverage/**",
-      "Implementacion/design
-*.{ts,tsx}"],
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "**/target/**",
+      "**/Implementacion/**"],
     languageOptions: {
       globals: {
         ...globals.node,

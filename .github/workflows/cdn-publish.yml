@@ -111,7 +111,7 @@ jobs:
     name: Deploy to production CDN
     if: >
       (github.event_name == 'workflow_dispatch' && inputs.environment == 'production') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.MARKETPLACE_HMAC_KEY != '')
     needs: [build-and-sign]
     runs-on: ubuntu-latest
     environment: cdn-production
