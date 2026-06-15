@@ -27,6 +27,8 @@ jobs:
           cat > /tmp/ci.env <<'EOF'
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=postgres
+          POSTGRES_UID=70
+          POSTGRES_GID=70
           REDIS_PASSWORD=redispass
           DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
           REDIS_URL=redis://:redispass@127.0.0.1:6379
@@ -87,6 +89,8 @@ jobs:
           cat > /tmp/ci.env <<'EOF'
           POSTGRES_USER=postgres
           POSTGRES_PASSWORD=postgres
+          POSTGRES_UID=70
+          POSTGRES_GID=70
           REDIS_PASSWORD=redispass
           DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
           REDIS_URL=redis://:redispass@127.0.0.1:6379

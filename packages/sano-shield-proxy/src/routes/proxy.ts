@@ -36,15 +36,14 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
   app.post<{ Params: { provider: string; "*": string } }>(
     "/v1/proxy/:provider/*",
     async (request, reply) => {
-      // ... previous code ...
-      const upstreamUrlObj = upstreamUrl(
-        services.providerBaseUrls[provider],
-        wildcardPath
-      );
       const requestId = randomUUID();
       const start = performance.now();
       const provider = proxyProviderSchema.parse(request.params.provider);
       const wildcardPath = request.params["*"] ?? "";
+      const upstreamUrlObj = upstreamUrl(
+        services.providerBaseUrls[provider],
+        wildcardPath
+      );
       const apiKey =
         (request.headers["x-api-key"] as string | undefined) ??
         (request.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "");
@@ -77,14 +76,14 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
             organizationId: principal.organizationId,
             apiKeyId: principal.apiKeyId,
             provider,
-            decision: "block",
+            decision: "BLOCK",
             policyId: snapshot.policyId,
             policyVersionId: snapshot.policyVersionId,
             detectionCounts: {},
             status: "blocked",
             eventType: "proxy",
             overheadMs: Math.round(performance.now() - start),
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(),
           };
           await services.audit?.record(event);
           return reply.code(403).send({ error: "Request blocked by policy" });
@@ -124,15 +123,15 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         organizationId: principal.organizationId,
         apiKeyId: principal.apiKeyId,
         provider,
-        decision: "allow",
+        decision: "ALLOW",
         policyId: snapshot?.policyId ?? "",
         policyVersionId: snapshot?.policyVersionId ?? "",
         detectionCounts: sanitized.counts,
-        status: upstreamResponse.statusCode < 500 ? "success" : "error",
+        status: upstreamResponse.statusCode < 500 ? "allowed" : "failed",
         eventType: "proxy",
         upstreamStatus: upstreamResponse.statusCode,
         overheadMs,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
       };
       await services.audit?.record(event);
 
