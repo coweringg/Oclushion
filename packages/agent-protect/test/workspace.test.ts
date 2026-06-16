@@ -52,11 +52,11 @@ describe("Agent Protect workspace", () => {
     const current = await readFile(workspaceFile, "utf8");
     await writeFile(workspaceFile, `${current}export const rotated = SANO_TOKEN_APIKEY_0;\n`, "utf8");
 
-    expect((await diffSession(manifest.id)).changed).toEqual(["src\\app.ts"]);
+    expect((await diffSession(manifest.id)).changed).toEqual(["src/app.ts"]);
     const applied = await applySession(manifest.id);
     const originalFile = await readFile(path.join(project, "src", "app.ts"), "utf8");
 
-    expect(applied.applied).toEqual(["src\\app.ts"]);
+    expect(applied.applied).toEqual(["src/app.ts"]);
     expect(originalFile).toContain("sk-proj-supersecreta123456789");
     expect(originalFile).not.toContain("SANO_TOKEN_APIKEY_0");
   });

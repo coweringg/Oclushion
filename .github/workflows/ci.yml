@@ -105,7 +105,7 @@ jobs:
           EOF
       - run: docker compose --env-file /tmp/ci.env up -d --wait postgres redis
       - run: pnpm build
-      - run: set -a && source /tmp/ci.env && set +a && pnpm test:e2e
+      - run: set -a && source /tmp/ci.env && set +a && CONTROL_API_URL=http://127.0.0.1:8082 pnpm test:e2e
 
   terraform:
     name: Terraform validate
