@@ -1,7 +1,6 @@
 import {
   createCipheriv,
   createDecipheriv,
-  createHash,
   createHmac,
   randomBytes,
   timingSafeEqual,
@@ -251,7 +250,7 @@ export function sanitizeConnectorResource(resource: ResourcePayload): {
   const seen: Record<string, number> = {};
   const emailReplaced = resource.content.replace(
     /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi,
-    (...args) => {
+    () => {
       const type = "email";
       const index = seen[type] ?? 0;
       seen[type] = index + 1;
@@ -261,7 +260,7 @@ export function sanitizeConnectorResource(resource: ResourcePayload): {
   );
   const apiKeyReplaced = emailReplaced.replace(
     /(sk-[A-Za-z0-9_-]{16,})/gi,
-    (...args) => {
+    () => {
       const type = "api_key";
       const index = seen[type] ?? 0;
       seen[type] = index + 1;
@@ -271,7 +270,7 @@ export function sanitizeConnectorResource(resource: ResourcePayload): {
   );
   const sanitizedContent = apiKeyReplaced.replace(
     /(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)/g,
-    (...args) => {
+    () => {
       const type = "payment_card";
       const index = seen[type] ?? 0;
       seen[type] = index + 1;

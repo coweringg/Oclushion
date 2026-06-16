@@ -134,7 +134,7 @@ const desktopRoutes: FastifyPluginAsync<{
     throw new Error("MfaSetupTracker is required. Pass it via plugin options.");
   }
   app.register(async (authApp) => {
-    authApp.post("/v1/auth/register", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } }, schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
+    authApp.post("/v1/auth/register", { config: { rateLimit: { max: 100, timeWindow: "1 minute" } }, schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
     const body = registerSchema.parse(request.body);
     if (!isPasswordStrong(body.password)) {
       return reply.code(400).send({
@@ -159,7 +159,7 @@ const desktopRoutes: FastifyPluginAsync<{
     }
   });
 
-  authApp.post("/v1/auth/login", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } }, schema: s(["Auth"], "Login with email and password", "authLogin") }, async (request, reply) => {
+  authApp.post("/v1/auth/login", { config: { rateLimit: { max: 100, timeWindow: "1 minute" } }, schema: s(["Auth"], "Login with email and password", "authLogin") }, async (request, reply) => {
     const body = loginSchema.parse(request.body);
     const clientIp = request.ip;
     const lockout = checkLoginLockout(body.email, clientIp);
@@ -182,7 +182,7 @@ const desktopRoutes: FastifyPluginAsync<{
     }
     return createSessionResponse(user, options.sessionSecret, options.keySet);
   });
-  }, { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } });
+  }, { config: { rateLimit: { max: 100, timeWindow: "1 minute" } } });
 
   const mfaChallengeSchema = z.object({
     mfaToken: z.string().min(1),
