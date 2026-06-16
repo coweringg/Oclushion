@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
+import { createHmac, randomBytes, randomUUID } from "node:crypto";
 
 import type { Pool, PoolClient, QueryResultRow } from "pg";
 
