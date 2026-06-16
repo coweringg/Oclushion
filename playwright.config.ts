@@ -4,6 +4,10 @@ const databaseUrl =
   process.env.OCLUSHION_E2E_DATABASE_URL ??
   process.env.SANO_E2E_DATABASE_URL ??
   "postgresql://postgres:postgres@127.0.0.1:5432/oclushion";
+const redisUrl =
+  process.env.OCLUSHION_E2E_REDIS_URL ??
+  process.env.REDIS_URL ??
+  "redis://127.0.0.1:6379";
 const internalToken = "oclushion-e2e-internal-token-requires-32-chars";
 
 export default defineConfig({
@@ -26,13 +30,13 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "pnpm --filter @oclushion/control-api exec tsx src/server.ts",
+      command: "pnpm --filter @oclushion/control-api exec tsx src/migrate.ts && pnpm --filter @oclushion/control-api exec tsx src/server.ts",
       port: 8082,
       reuseExistingServer: !process.env.CI,
       env: {
         NODE_ENV: "test",
         DATABASE_URL: databaseUrl,
-        REDIS_URL: "redis://127.0.0.1:6379",
+        REDIS_URL: redisUrl,
         PORT: "8082"
       }
     },
@@ -49,7 +53,7 @@ export default defineConfig({
       env: {
         NODE_ENV: "test",
         DATABASE_URL: databaseUrl,
-        REDIS_URL: "redis://127.0.0.1:6379",
+        REDIS_URL: redisUrl,
         PII_SERVICE_URL: "http://127.0.0.1:8081",
         TOKEN_MAPPING_ENCRYPTION_KEY: "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
         TOKEN_MAPPING_TTL_SECONDS: "300",

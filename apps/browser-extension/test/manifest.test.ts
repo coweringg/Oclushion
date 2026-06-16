@@ -16,7 +16,7 @@ describe("Browser extension manifest", () => {
     expect(manifest.manifest_version).toBe(3);
     expect(manifest.permissions).toEqual(["activeTab", "storage"]);
     expect(manifest.host_permissions).toEqual(
-      expect.arrayContaining(["https://chatgpt.com"]),
+      expect.arrayContaining(["https://chatgpt.com/*"]),
     );
   });
 });
