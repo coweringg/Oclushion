@@ -8,13 +8,13 @@ description = "Native Git operations via gitoxide (gix) for Oclushion: diff, bra
 name = "git_native"
 
 [dependencies]
-gix = "0.68"
-gix-diff = "0.48"
-gix-status = "0.13"
+gix = "0.83"
+gix-diff = "0.63"
+gix-status = "0.30"
 gix-blame = "0.3"
-gix-traverse = "0.43"
-gix-object = "0.46"
-gix-commitgraph = "0.26"
+gix-traverse = "0.57"
+gix-object = "0.60"
+gix-commitgraph = "0.37"
 thiserror = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
