@@ -5,6 +5,7 @@ import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { type FastifyInstance } from "fastify";
+import { z } from "zod";
 
 import { KeySet } from "./auth/key-set.js";
 import { inc } from "./metrics/metrics.js";
@@ -106,6 +107,13 @@ export async function createApp(
 
   app.addHook("onRequest", async (request) => {
     inc("oclushion_requests_total", { job: "control-api", method: request.method, path: request.url.split("?")[0] ?? "/" });
+  });
+
+  app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof z.ZodError) {
+      return reply.code(400).send({ error: "Invalid request.", issues: error.issues });
+    }
+    throw error;
   });
 
   app.register(helmet, { global: true });
