@@ -105,6 +105,18 @@ jobs:
           EOF
       - run: docker compose --env-file /tmp/ci.env up -d --wait postgres redis
       - run: pnpm build
+      - name: Wait for Postgres readiness
+        run: |
+          for i in $(seq 1 30); do
+            if pg_isready -h 127.0.0.1 -p 5432 -U postgres -d oclushion -t 2 2>/dev/null; then
+              echo "Postgres ready on attempt $i"
+              exit 0
+            fi
+            echo "Waiting for Postgres (attempt $i)..."
+            sleep 2
+          done
+          echo "Postgres not ready after 60s"
+          exit 1
       - run: set -a && source /tmp/ci.env && set +a && CONTROL_API_URL=http://127.0.0.1:8082 pnpm test:e2e
 
   terraform:

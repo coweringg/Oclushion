@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { performance } from "node:perf_hooks";
 
 import { type FastifyPluginAsync } from "fastify";
+import { ZodError } from "zod";
 
 import { evaluatePolicy } from "@oclushion/policy-runtime";
 import { proxyProviderSchema, type ProxyProvider, type SensitiveEntityType } from "@oclushion/shared";
@@ -29,7 +30,8 @@ export type ProxyRouteServices = {
 };
 
 export function upstreamUrl(base: string, path: string): URL {
-  return new URL(path, base.replace(/\/+$/, "") + "/");
+  const sanitizedPath = path.replace(/^\/{2,}/, "/");
+  return new URL(sanitizedPath, base.replace(/\/+$/, "") + "/");
 }
 
 const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services) => {
@@ -38,13 +40,25 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
     async (request, reply) => {
       const requestId = randomUUID();
       const start = performance.now();
-      const provider = proxyProviderSchema.parse(request.params.provider);
+
+      let provider: ProxyProvider;
+      try {
+        provider = proxyProviderSchema.parse(request.params.provider);
+      } catch (err) {
+        if (err instanceof ZodError) {
+          return reply.code(404).send({ error: `Unconfigured provider: ${request.params.provider}` });
+        }
+        throw err;
+      }
+
       const wildcardPath = request.params["*"] ?? "";
       const upstreamUrlObj = upstreamUrl(
         services.providerBaseUrls[provider],
         wildcardPath
       );
       const apiKey =
+        (request.headers["x-sano-api-key"] as string | undefined) ??
+        (request.headers["x-oclushion-api-key"] as string | undefined) ??
         (request.headers["x-api-key"] as string | undefined) ??
         (request.headers.authorization as string | undefined)?.replace(/^Bearer\s+/i, "");
 
@@ -52,22 +66,35 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         return reply.code(401).send({ error: "Missing API key" });
       }
 
-      const principal = await services.clientApiKeyResolver.resolve(apiKey, "proxy");
+      const principal = await services.clientApiKeyResolver.resolve(apiKey, "proxy:invoke");
       if (!principal) {
         return reply.code(401).send({ error: "Invalid API key" });
       }
 
+      const rawBody = request.body;
+      if (!rawBody || typeof rawBody !== "object") {
+        return reply.code(400).send({ error: "Request body is required" });
+      }
+
+      const tokenizeTypes: readonly SensitiveEntityType[] = ["email", "phone", "person", "payment_card", "private_key", "api_key", "bank_account", "access_token"];
+      const inspection = await inspectPayload(rawBody, services.detector, requestId);
+      const sanitized = tokenizePayload(inspection, tokenizeTypes);
+
+      const hasTokenization = sanitized.mapping && Object.keys(sanitized.mapping).length > 0;
+
       const policyContext = {
         organizationId: principal.organizationId,
-        module: "chat-protect" as const,
-        action: "proxy:forward",
+        module: "gateway-protect" as const,
+        action: "provider_request",
         provider,
         resource: `${provider}/${wildcardPath}`,
         metadata: {},
-        detections: [],
+        detections: inspection.detections,
       };
 
       const snapshot = await services.policySnapshots.get(principal.organizationId);
+      const overheadMs = Math.round(performance.now() - start);
+
       if (snapshot) {
         const decision = evaluatePolicy(snapshot, policyContext);
         if (decision.effect === "BLOCK") {
@@ -79,36 +106,34 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
             decision: "BLOCK",
             policyId: snapshot.policyId,
             policyVersionId: snapshot.policyVersionId,
-            detectionCounts: {},
+            detectionCounts: sanitized.counts,
             status: "blocked",
             eventType: "proxy",
-            overheadMs: Math.round(performance.now() - start),
+            overheadMs,
             createdAt: new Date(),
           };
-          await services.audit?.record(event);
+          try {
+            await services.audit?.record(event);
+          } catch {
+            return reply.code(503).send({ error: "Audit storage unavailable" });
+          }
+          reply.header("x-sano-overhead-ms", overheadMs);
           return reply.code(403).send({ error: "Request blocked by policy" });
         }
       }
 
-      const rawBody = request.body;
-      if (!rawBody || typeof rawBody !== "object") {
-        return reply.code(400).send({ error: "Request body is required" });
+      if (hasTokenization) {
+        await services.tokenStore.put(requestId, sanitized.mapping!);
       }
 
-      const tokenizeTypes: readonly SensitiveEntityType[] = ["email", "phone", "person", "payment_card", "private_key"];
-      const inspection = await inspectPayload(rawBody, services.detector, requestId);
-      const sanitized = tokenizePayload(inspection, tokenizeTypes);
-
-      if (sanitized.mapping && Object.keys(sanitized.mapping).length > 0) {
-        await services.tokenStore.put(requestId, sanitized.mapping);
-      }
-
+      const stripHeaders = new Set(["host", "x-sano-api-key", "x-oclushion-api-key", "content-length", "user-agent", "connection"]);
       const upstreamResponse = await services.upstream.forward({
         url: upstreamUrlObj,
-        headers: {
-          "content-type": "application/json",
-          authorization: (request.headers.authorization as string) ?? "",
-        },
+        headers: Object.fromEntries(
+          Object.entries(request.headers)
+            .filter(([key]) => !stripHeaders.has(key))
+            .map(([key, value]) => [key, Array.isArray(value) ? value.join(", ") : String(value ?? "")]),
+        ),
         body: sanitized.payload,
       });
 
@@ -117,13 +142,12 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         ? reversePayload(upstreamResponse.body, storedMapping)
         : upstreamResponse.body;
 
-      const overheadMs = Math.round(performance.now() - start);
       const event: AuditEvent = {
         requestId,
         organizationId: principal.organizationId,
         apiKeyId: principal.apiKeyId,
         provider,
-        decision: "ALLOW",
+        decision: hasTokenization ? "TOKENIZE" : "ALLOW",
         policyId: snapshot?.policyId ?? "",
         policyVersionId: snapshot?.policyVersionId ?? "",
         detectionCounts: sanitized.counts,
@@ -133,8 +157,13 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         overheadMs,
         createdAt: new Date(),
       };
-      await services.audit?.record(event);
+      try {
+        await services.audit?.record(event);
+      } catch {
+        return reply.code(503).send({ error: "Audit storage unavailable" });
+      }
 
+      reply.header("x-sano-overhead-ms", overheadMs);
       return reply.code(upstreamResponse.statusCode).send(resolvedBody);
     },
   );

@@ -353,10 +353,11 @@ describe("proxy sanitization flow", () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(forwardedHeaders).toEqual({
+    expect(forwardedHeaders).toMatchObject({
       "x-api-key": "anthropic-provider-token",
       "anthropic-version": "2023-06-01",
     });
+    expect(forwardedHeaders).not.toHaveProperty("x-sano-api-key");
     expect(forwardedHeaders).not.toHaveProperty("x-sano-api-key");
   });
 

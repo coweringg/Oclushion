@@ -5,7 +5,13 @@ import { readEnvironment } from "./config/environment.js";
 import { PostgresControlRepository } from "./storage/repository.js";
 
 const environment = readEnvironment();
-const pool = new Pool({ connectionString: environment.DATABASE_URL });
+const pool = new Pool({
+  connectionString: environment.DATABASE_URL,
+  connectionTimeoutMillis: 5000,
+  max: 10,
+  idleTimeoutMillis: 30000,
+});
+pool.on("error", (err) => console.error("[db] Pool error:", err.message));
 const repository = new PostgresControlRepository(pool);
 const app = await createApp(repository, {
   adminToken: environment.CONTROL_API_ADMIN_TOKEN,
