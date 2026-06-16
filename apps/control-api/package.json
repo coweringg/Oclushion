@@ -10,7 +10,7 @@
     "lint": "eslint src test",
     "start": "node --import ./dist/instrumentation.js dist/server.js",
     "start:worker": "node dist/jobs/worker-entry.js",
-    "test": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && vitest run",
+    "test": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && vitest run && node --test test/queue.service.test.ts",
     "typecheck": "pnpm --filter @oclushion/shared build && pnpm --filter @oclushion/connectors build && tsc --noEmit"
   },
   "dependencies": {

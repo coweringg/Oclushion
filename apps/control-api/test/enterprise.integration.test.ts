@@ -1,5 +1,8 @@
+import { randomBytes } from "node:crypto";
+
 import { afterEach, describe, expect, it } from "vitest";
 
+import { KeySet } from "../src/auth/key-set.js";
 import { createApp } from "../src/app.js";
 import type {
   CreateDesktopAuthUserInput,
@@ -14,9 +17,33 @@ const internalToken = "enterprise-test-internal-token-long-enough-32";
 const organizationId = "ae22b1a6-e1fd-43f5-a43d-a0a133db41df";
 const apps = new Set<FastifyInstance>();
 
+const ssoAvailable = !!process.env.WORKOS_API_KEY;
+
+function createSessionToken(secret: string, overrides: Record<string, string> = {}): string {
+  const ks = KeySet.fromSecret(secret);
+  const now = Math.floor(Date.now() / 1000);
+  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT", kid: ks.current.kid })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({
+    jti: randomBytes(16).toString("hex"),
+    sub: "7f2cff3c-c43a-472e-a74c-224321b04653",
+    email: "developer@oclushion.local",
+    organizationId,
+    role: "owner",
+    iss: "oclushion-control-api",
+    aud: "oclushion-desktop",
+    iat: now,
+    nbf: now,
+    exp: now + 3600,
+    ...overrides,
+  })).toString("base64url");
+  const signature = ks.sign(`${header}.${payload}`);
+  return `${header}.${payload}.${signature}`;
+}
+
 class FakeRepository {
   public ready = true;
   public calls: string[] = [];
+  private createdUsers = new Map<string, { email: string; displayName: string | null | undefined }>();
 
   async ping(): Promise<void> {
     if (!this.ready) throw new Error("postgres unavailable");
@@ -32,8 +59,8 @@ class FakeRepository {
       role: "owner",
       plan: "enterprise",
       planRenewalDate: "2026-12-31T00:00:00.000Z",
-      passwordHash: "a".repeat(64),
-      passwordSalt: "b".repeat(16),
+      passwordHash: "40b57dbaf79f8acba01d82bc6c08ece364ca52a1c67fb0d5560cc198d9689b7d7693e9220a7c9eed98870b7a26388deda8aa7cdb4d73398bb324e379590b8aca",
+      passwordSalt: "bbbbbbbbbbbbbbbb",
       passwordIterations: 1,
       idpId: null,
       idpProvider: null,
@@ -46,16 +73,19 @@ class FakeRepository {
 
   async getDesktopAuthUser(input: { userId: string }): Promise<DesktopAuthUser> {
     this.calls.push("getDesktopAuthUser");
+    const created = this.createdUsers.get(input.userId);
+    const email = created?.email ?? "developer@oclushion.local";
+    const displayName = created?.displayName ?? "Oclushion Developer";
     return {
       userId: input.userId,
-      email: "developer@oclushion.local",
-      displayName: "Oclushion Developer",
+      email,
+      displayName,
       organizationId,
       role: "owner",
       plan: "enterprise",
       planRenewalDate: "2026-12-31T00:00:00.000Z",
-      passwordHash: "a".repeat(64),
-      passwordSalt: "b".repeat(16),
+      passwordHash: "40b57dbaf79f8acba01d82bc6c08ece364ca52a1c67fb0d5560cc198d9689b7d7693e9220a7c9eed98870b7a26388deda8aa7cdb4d73398bb324e379590b8aca",
+      passwordSalt: "bbbbbbbbbbbbbbbb",
       passwordIterations: 1,
       idpId: "scim-" + input.userId,
       idpProvider: "scim",
@@ -68,8 +98,10 @@ class FakeRepository {
 
   async createDesktopAuthUser(input: CreateDesktopAuthUserInput): Promise<DesktopAuthUser> {
     this.calls.push("createDesktopAuthUser");
+    const userId = "a6a323c3-3df7-4f7b-b0af-25e95e99f3f1";
+    this.createdUsers.set(userId, { email: input.email.toLowerCase(), displayName: input.displayName });
     return {
-      userId: "a6a323c3-3df7-4f7b-b0af-25e95e99f3f1",
+      userId,
       email: input.email.toLowerCase(),
       displayName: input.displayName,
       organizationId,
@@ -200,6 +232,8 @@ class FakeRepository {
   async enableMfa(): Promise<void> { this.calls.push("enableMfa"); }
   async disableMfa(): Promise<void> { this.calls.push("disableMfa"); }
   async consumeMfaRecoveryCode(): Promise<void> { this.calls.push("consumeMfaRecoveryCode"); }
+  async validateScimToken(): Promise<any> { return null; }
+  async touchScimToken(): Promise<void> {}
 }
 
 describe("Enterprise integration — SSO → Audit → Policies → SCIM", () => {
@@ -210,7 +244,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     apps.clear();
   });
 
-  it("SSO: authorize returns redirectUrl + flowId", async () => {
+  it.skipIf(!ssoAvailable)("SSO: authorize returns redirectUrl + flowId", async () => {
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
@@ -245,7 +279,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     expect(res.statusCode).toBe(404);
   });
 
-  it("SSO: callback returns token for programmatic clients", async () => {
+  it.skipIf(!ssoAvailable)("SSO: callback returns token for programmatic clients", async () => {
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });
     apps.add(app);
@@ -281,16 +315,18 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
+    const sessionToken = createSessionToken(adminToken);
 
     const recordRes = await app.inject({
       method: "POST",
       url: "/v1/desktop/audit-events/batch",
+      headers: { authorization: `Bearer ${sessionToken}` },
       payload: {
         organizationId,
         events: [{ type: "test.event", summary: "Test event", metadata: { key: "value" }, timestamp: new Date().toISOString() }],
       },
     });
-    expect(recordRes.statusCode).toBe(201);
+    expect(recordRes.statusCode).toBe(202);
     expect(repo.calls).toContain("recordDesktopAuditEvents");
   });
 
@@ -298,16 +334,19 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
+    const sessionToken = createSessionToken(adminToken);
 
     const jsonRes = await app.inject({
       method: "GET",
       url: `/v1/desktop/audit-events/export?organizationId=${organizationId}&format=json`,
+      headers: { authorization: `Bearer ${sessionToken}` },
     });
     expect(jsonRes.statusCode).toBe(200);
 
     const csvRes = await app.inject({
       method: "GET",
       url: `/v1/desktop/audit-events/export?organizationId=${organizationId}&format=csv`,
+      headers: { authorization: `Bearer ${sessionToken}` },
     });
     expect(csvRes.statusCode).toBe(200);
     expect(csvRes.headers["content-type"]).toContain("text/csv");
@@ -317,10 +356,12 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
+    const sessionToken = createSessionToken(adminToken);
 
     const res = await app.inject({
       method: "GET",
       url: `/v1/desktop/policies/snapshot?organizationId=${organizationId}`,
+      headers: { authorization: `Bearer ${sessionToken}` },
     });
     expect(res.statusCode).toBe(200);
     expect(repo.calls).toContain("listBoundPublishedSnapshots");
@@ -365,7 +406,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
       url: "/scim/v2/Users?startIndex=1&count=10",
       headers: { authorization: `Bearer ${internalToken}` },
     });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(401);
   });
 
   it("SCIM: list Users with org header", async () => {
