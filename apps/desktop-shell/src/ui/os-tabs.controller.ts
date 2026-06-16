@@ -1,3 +1,4 @@
+import { t } from "../i18n/translate";
 import { BaseController, type ControllerContext } from "./controller";
 import { OSTabsRenderer, type OSTabsState, type OSTab } from "./renderers/os-tabs.renderer";
 import { WelcomeScreenRenderer } from "./renderers/welcome-screen.renderer";
@@ -75,7 +76,7 @@ export class OsTabsController extends BaseController {
       if (this.canvasRenderer) {
         this.canvasRenderer.render(figma);
       } else {
-        figma.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#666;background:#1e1e1e;">Canvas Engine Mounting...</div>`;
+        figma.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#666;background:#1e1e1e;">${t("osTabs.canvasMounting")}</div>`;
       }
     }
 
@@ -83,7 +84,7 @@ export class OsTabsController extends BaseController {
       const chat = document.createElement("div");
       chat.id = "chat-view";
       chat.className = "ocl-view";
-      chat.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#666;background:#1e1e1e;">Chat Engine Mounting...</div>`;
+      chat.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;color:#666;background:#1e1e1e;">${t("osTabs.chatMounting")}</div>`;
       this.viewPort.appendChild(chat);
     }
     

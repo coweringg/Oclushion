@@ -18,6 +18,7 @@ const SCAN_DIRS = [
 ];
 
 let exitCode = 0;
+let hardcodedIssues = 0;
 
 function checkLocaleFiles() {
   console.log("\n--- Checking locale files ---");
@@ -65,7 +66,7 @@ function checkLocaleFiles() {
 
 function checkHardcodedStrings() {
   console.log("\n--- Scanning for hardcoded UI strings ---");
-  let issues = 0;
+  hardcodedIssues = 0;
 
   for (const dir of SCAN_DIRS) {
     const fullDir = join(repoRoot, dir);
@@ -89,7 +90,7 @@ function checkHardcodedStrings() {
         for (const pattern of HARDCODED_PATTERNS) {
           if (pattern.test(line)) {
             console.warn(`  HARDCODED: ${file.replace(repoRoot, "")}:${i + 1}  ${line.trim().slice(0, 80)}`);
-            issues++;
+            hardcodedIssues++;
             break;
           }
         }
@@ -97,8 +98,8 @@ function checkHardcodedStrings() {
     }
   }
 
-  console.log(`Hardcoded strings: ${issues} potential issues`);
-  return issues === 0;
+  console.log(`Hardcoded strings: ${hardcodedIssues} potential issues`);
+  return hardcodedIssues === 0;
 }
 
 function collectKeys(obj, prefix = "") {
@@ -118,7 +119,7 @@ const hardcodedOk = checkHardcodedStrings();
 
 console.log(`\n--- Summary ---`);
 console.log(`Locale files: ${localesOk ? "PASS" : "ISSUES"}`);
-  console.log(`Hardcoded strings: ${hardcodedOk ? "PASS" : `${issues} ISSUES`}`);
+  console.log(`Hardcoded strings: ${hardcodedOk ? "PASS" : `${hardcodedIssues} ISSUES`}`);
 
 if (!localesOk || !hardcodedOk) exitCode = 1;
 process.exit(exitCode);

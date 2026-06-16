@@ -81,7 +81,8 @@
     "noSuggestions": "No suggestions",
     "refresh": "Refresh",
     "log": "Log",
-    "noRepoOpen": "No repo open"
+    "noRepoOpen": "No repo open",
+    "percent": "{{pct}}%"
   },
   "navigation": {
     "global": "Global navigation",
@@ -601,5 +602,10 @@
     "noRepoOpen": "No repo open",
     "stageFile": "Stage file",
     "workingTreeClean": "Working tree clean"
+  },
+  "osTabs": {
+    "browserMounting": "Browser Engine Mounting...",
+    "canvasMounting": "Canvas Engine Mounting...",
+    "chatMounting": "Chat Engine Mounting..."
   }
 }

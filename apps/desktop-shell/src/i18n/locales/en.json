@@ -31,7 +31,6 @@
     "explain": "Explain",
     "version": "Version",
     "author": "Author",
-    "retry": "Retry",
     "closeNotification": "Close notification",
     "branch": "Branch",
     "main": "main",
@@ -82,7 +81,8 @@
     "ok": "OK",
     "err": "ERR",
     "warn": "WARN",
-    "info": "INFO"
+    "info": "INFO",
+    "percent": "{{pct}}%"
   },
   "navigation": {
     "global": "Global navigation",
@@ -365,12 +365,6 @@
     "stageFile": "Stage file",
     "workingTreeClean": "Working tree clean"
   },
-  "test": {
-    "section": "Tests",
-    "run": "Run tests",
-    "detect": "Detect framework",
-    "resultsPlaceholder": "Run tests to see results"
-  },
   "marketplace": {
     "aria": "Skillpacks Marketplace",
     "eyebrow": "Oclushion Ecosystem",
@@ -474,6 +468,11 @@
     "settingsTitle": "Settings",
     "brandName": "Oclushion",
     "titlebarAria": "Oclushion IDE titlebar"
+  },
+  "osTabs": {
+    "browserMounting": "Browser Engine Mounting...",
+    "canvasMounting": "Canvas Engine Mounting...",
+    "chatMounting": "Chat Engine Mounting..."
   },
   "sidebar": {
     "chatHistory": "Chat history",

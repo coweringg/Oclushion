@@ -1,3 +1,5 @@
+import { t } from "../i18n/translate";
+
 const SPINNER_CONTAINER_ID = "ocl-progress-indicators";
 
 export type ProgressOptions = {
@@ -72,7 +74,7 @@ export function updateProgress(id: string, percent: number, message?: string): v
   const pctLabel = el.querySelector<HTMLElement>("div[style*='text-align:right']");
   const msgEl = el.querySelector<HTMLElement>("div[style*='font-size:12px;color:#d1d5db']");
   if (fill) fill.style.width = `${pct}%`;
-  if (pctLabel) pctLabel.textContent = `${pct}%`;
+  if (pctLabel) pctLabel.textContent = t("common.percent", { pct });
   if (msgEl && message) msgEl.textContent = escapeHtml(message);
 }
 
