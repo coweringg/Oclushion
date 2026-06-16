@@ -45,7 +45,7 @@ jobs:
       - run: pnpm typecheck
       - run: node scripts/validate-i18n.mjs
       - run: pnpm audit --audit-level=high --ignore GHSA-gv7w-rqvm-qjhr
-      - name: Start Postgres
+      - name: Start Postgres & Redis
         run: |
           docker run -d --name postgres \
             -e POSTGRES_USER=postgres \
@@ -53,12 +53,24 @@ jobs:
             -e POSTGRES_DB=oclushion \
             -p 5432:5432 \
             postgres:17-alpine
+          docker run -d --name redis \
+            -p 6379:6379 \
+            redis:7-alpine \
+            redis-server --appendonly yes
           for i in $(seq 1 30); do
             if docker exec postgres pg_isready -U postgres -d oclushion 2>/dev/null; then
               echo "Postgres ready on attempt $i"
               break
             fi
             echo "Waiting for Postgres (attempt $i)..."
+            sleep 2
+          done
+          for i in $(seq 1 30); do
+            if docker exec redis redis-cli ping 2>/dev/null | grep -q PONG; then
+              echo "Redis ready on attempt $i"
+              break
+            fi
+            echo "Waiting for Redis (attempt $i)..."
             sleep 2
           done
       - run: pnpm test
