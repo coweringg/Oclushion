@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -15,15 +15,13 @@ integrationDescribe("Postgres control repository", () => {
   const repository = new PostgresControlRepository(pool);
 
   beforeAll(async () => {
-    for (const file of [
-      "001-platform-control-plane.sql",
-      "002-gateway-integration.sql",
-      "003-chat-protect.sql",
-      "004-data-protect.sql",
-      "005-connectors.sql",
-      "006-launch-readiness.sql",
-    ]) {
-      const migration = await readFile(new URL(`../sql/${file}`, import.meta.url), "utf8");
+    const sqlDir = new URL("../sql/", import.meta.url);
+    const files = (await readdir(sqlDir))
+      .filter((file) => /^\d+.*\.sql$/.test(file))
+      .sort((a, b) => a.localeCompare(b));
+
+    for (const file of files) {
+      const migration = await readFile(new URL(file, sqlDir), "utf8");
       await pool.query(migration);
     }
   });

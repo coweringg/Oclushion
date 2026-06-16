@@ -43,9 +43,10 @@ test.describe("Auth — Login", () => {
   });
 
   test("login with weak credentials triggers rate limiting", async () => {
+    const lockedEmail = generateTestEmail();
     for (let i = 0; i < 12; i++) {
       const res = await apiPost("/v1/auth/login", {
-        email: testEmail,
+        email: lockedEmail,
         password: `WrongPass${i}!`,
       });
       if (res.status === 429) {

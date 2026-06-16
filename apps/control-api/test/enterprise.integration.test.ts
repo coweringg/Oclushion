@@ -1,8 +1,5 @@
-import { randomBytes } from "node:crypto";
-
 import { afterEach, describe, expect, it } from "vitest";
 
-import { KeySet } from "../src/auth/key-set.js";
 import { createApp } from "../src/app.js";
 import type {
   CreateDesktopAuthUserInput,
@@ -19,25 +16,13 @@ const apps = new Set<FastifyInstance>();
 
 const ssoAvailable = !!process.env.WORKOS_API_KEY;
 
-function createSessionToken(secret: string, overrides: Record<string, string> = {}): string {
-  const ks = KeySet.fromSecret(secret);
-  const now = Math.floor(Date.now() / 1000);
-  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT", kid: ks.current.kid })).toString("base64url");
-  const payload = Buffer.from(JSON.stringify({
-    jti: randomBytes(16).toString("hex"),
-    sub: "7f2cff3c-c43a-472e-a74c-224321b04653",
-    email: "developer@oclushion.local",
-    organizationId,
-    role: "owner",
-    iss: "oclushion-control-api",
-    aud: "oclushion-desktop",
-    iat: now,
-    nbf: now,
-    exp: now + 3600,
-    ...overrides,
-  })).toString("base64url");
-  const signature = ks.sign(`${header}.${payload}`);
-  return `${header}.${payload}.${signature}`;
+async function loginAs(app: FastifyInstance): Promise<string> {
+  const res = await app.inject({
+    method: "POST",
+    url: "/v1/auth/login",
+    payload: { email: "developer@oclushion.local", password: "password123" },
+  });
+  return res.json().token;
 }
 
 class FakeRepository {
@@ -135,6 +120,7 @@ class FakeRepository {
   async listOrganizationMembers(): Promise<OrganizationMemberSummary[]> {
     this.calls.push("listOrganizationMembers");
     return [
+      { userId: "7f2cff3c-c43a-472e-a74c-224321b04653", email: "developer@oclushion.local", displayName: "Oclushion Developer", role: "owner", createdAt: "2026-01-01T00:00:00.000Z", disabledAt: null },
       { userId: "u1", email: "owner@oclushion.local", displayName: "Owner", role: "owner", createdAt: "2026-01-01T00:00:00.000Z", disabledAt: null },
       { userId: "u2", email: "dev@oclushion.local", displayName: "Developer", role: "developer", createdAt: "2026-02-01T00:00:00.000Z", disabledAt: null },
       { userId: "u3", email: "auditor@oclushion.local", displayName: "Auditor", role: "auditor", createdAt: "2026-03-01T00:00:00.000Z", disabledAt: null },
@@ -315,7 +301,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
-    const sessionToken = createSessionToken(adminToken);
+    const sessionToken = await loginAs(app);
 
     const recordRes = await app.inject({
       method: "POST",
@@ -334,7 +320,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
-    const sessionToken = createSessionToken(adminToken);
+    const sessionToken = await loginAs(app);
 
     const jsonRes = await app.inject({
       method: "GET",
@@ -356,7 +342,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     const repo = new FakeRepository();
     const app = await createApp(repo as any, { adminToken, enableRateLimiting: false });
     apps.add(app);
-    const sessionToken = createSessionToken(adminToken);
+    const sessionToken = await loginAs(app);
 
     const res = await app.inject({
       method: "GET",

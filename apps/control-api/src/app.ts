@@ -120,7 +120,7 @@ export async function createApp(
   const keySet = options.adminToken.includes(":")
     ? KeySet.fromSerialized(options.adminToken)
     : KeySet.fromSecret(options.adminToken);
-  app.register(rbacPlugin, { sessionSecret: options.adminToken, repository, keySet });
+  await rbacPlugin(app, { sessionSecret: options.adminToken, repository, keySet });
   if (options.enableRateLimiting ?? true) {
     app.register(rateLimit, {
       global: true,
