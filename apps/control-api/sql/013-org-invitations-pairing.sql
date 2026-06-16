@@ -10,12 +10,12 @@ CREATE TABLE IF NOT EXISTS organization_invitations (
     email           TEXT NOT NULL,
     role            TEXT NOT NULL DEFAULT 'developer' CHECK (role IN ('owner', 'admin', 'security_officer', 'auditor', 'developer', 'viewer')),
     invitation_code TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(16), 'hex'),
-    invited_by      UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    invited_by      UUID NOT NULL REFERENCES platform_users(id) ON DELETE CASCADE,
     status          TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'expired', 'cancelled')),
     expires_at      TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days'),
     created_at      TIMESTAMPTZ DEFAULT now(),
     accepted_at     TIMESTAMPTZ,
-    accepted_by     UUID REFERENCES users(user_id) ON DELETE SET NULL
+    accepted_by     UUID REFERENCES platform_users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_invitations_code           ON organization_invitations(invitation_code);
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS pairing_codes (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL,
     code            TEXT UNIQUE NOT NULL DEFAULT ('OCL-' || upper(encode(gen_random_bytes(6), 'hex'))),
-    created_by      UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_by      UUID NOT NULL REFERENCES platform_users(id) ON DELETE CASCADE,
     status          TEXT DEFAULT 'active' CHECK (status IN ('active', 'used', 'expired')),
     max_uses        INTEGER DEFAULT 1,
     used_count      INTEGER DEFAULT 0,
@@ -42,7 +42,7 @@ CREATE INDEX IF NOT EXISTS idx_pairing_codes_org_status    ON pairing_codes(orga
 -- ── Trial Management ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS trial_settings (
     id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    organization_id       UUID NOT NULL UNIQUE REFERENCES organizations(organization_id) ON DELETE CASCADE,
+    organization_id       UUID NOT NULL UNIQUE REFERENCES organizations(id) ON DELETE CASCADE,
     trial_ends_at         TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '14 days'),
     trial_max_members     INTEGER DEFAULT 5,
     trial_extended_days   INTEGER DEFAULT 0,

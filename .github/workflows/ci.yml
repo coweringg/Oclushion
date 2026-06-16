@@ -45,7 +45,22 @@ jobs:
       - run: pnpm typecheck
       - run: node scripts/validate-i18n.mjs
       - run: pnpm audit --audit-level=high --ignore GHSA-gv7w-rqvm-qjhr
-      - run: docker compose --env-file /tmp/ci.env up -d postgres
+      - name: Start Postgres
+        run: |
+          docker run -d --name postgres \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=oclushion \
+            -p 5432:5432 \
+            postgres:17-alpine
+          for i in $(seq 1 30); do
+            if docker exec postgres pg_isready -U postgres -d oclushion 2>/dev/null; then
+              echo "Postgres ready on attempt $i"
+              break
+            fi
+            echo "Waiting for Postgres (attempt $i)..."
+            sleep 2
+          done
       - run: pnpm test
         env:
           CONTROL_API_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/oclushion
