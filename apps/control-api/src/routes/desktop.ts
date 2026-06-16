@@ -21,6 +21,7 @@ import {
   verifyRecoveryCode,
   buildTotpUri,
 } from "../auth/totp.service.js";
+import { createMfaSetupTracker, type MfaSetupTracker } from "../auth/mfa-tracker.js";
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_WINDOW_MS = 15 * 60 * 1000;
@@ -126,7 +127,9 @@ const desktopRoutes: FastifyPluginAsync<{
   repository: ControlRepository;
   sessionSecret: string;
   keySet?: KeySet;
+  mfaTracker?: MfaSetupTracker;
 }> = async (app, options) => {
+  const mfaTracker = options.mfaTracker ?? createMfaSetupTracker();
   app.register(async (authApp) => {
     authApp.post("/v1/auth/register", { schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
     const body = registerSchema.parse(request.body);
@@ -221,6 +224,10 @@ const desktopRoutes: FastifyPluginAsync<{
     if (user.totpEnabledAt) {
       return reply.code(409).send({ error: "MFA is already enabled for this account." });
     }
+    if (await mfaTracker.isInProgress(user.userId)) {
+      return reply.code(409).send({ error: "MFA setup is already in progress for this account." });
+    }
+    await mfaTracker.markInProgress(user.userId);
     const secret = generateTotpSecret();
     const recovery = generateRecoveryCodes();
     const uri = buildTotpUri(secret.base32, user.email);
@@ -822,9 +829,57 @@ export default desktopRoutes;
 function getStripeClient(): Stripe {
   const apiKey = process.env.STRIPE_SECRET_KEY;
   if (!apiKey) {
-    throw new Error("STRIPE_SECRET_KEY is not configured.");
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("STRIPE_SECRET_KEY is not configured.");
+    }
+    return createMockStripeClient();
   }
   return new Stripe(apiKey, { apiVersion: "2026-05-27.dahlia" });
+}
+
+function createMockStripeClient(): Stripe {
+  const mockCreateCheckoutSession = async () => ({
+    id: `cs_test_${randomBytes(16).toString("hex")}`,
+    url: `https://checkout.stripe.com/c/pay/${randomBytes(8).toString("hex")}`,
+    object: "checkout.session" as const,
+    mode: "payment" as const,
+    payment_status: "unpaid" as const,
+    status: "open" as const,
+    amount_total: 0,
+    currency: "usd",
+    customer: null,
+    customer_email: null,
+    client_reference_id: null,
+    metadata: {},
+    success_url: "",
+    cancel_url: "",
+    created: Math.floor(Date.now() / 1000),
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    livemode: false,
+    locale: null,
+    payment_intent: null,
+    setup_intent: null,
+    submit_type: null,
+    subscription: null,
+    total_details: { amount_discount: 0, amount_shipping: 0, amount_tax: 0 },
+  });
+
+  const mockConstructEvent = () => ({
+    id: "evt_test_mock",
+    object: "event" as const,
+    api_version: "2026-05-27.dahlia",
+    created: Math.floor(Date.now() / 1000),
+    data: { object: {} },
+    livemode: false,
+    pending_webhooks: 0,
+    request: { id: null, idempotency_key: null },
+    type: "checkout.session.completed",
+  });
+
+  return {
+    checkout: { sessions: { create: mockCreateCheckoutSession } },
+    webhooks: { constructEvent: mockConstructEvent },
+  } as unknown as Stripe;
 }
 
 function verifyPassword(password: string, user: DesktopAuthUser): boolean {

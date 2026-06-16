@@ -8,6 +8,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { KeySet } from "./auth/key-set.js";
+import { createMfaSetupTracker } from "./auth/mfa-tracker.js";
 import { inc } from "./metrics/metrics.js";
 import { rbacPlugin } from "./auth/rbac.middleware.js";
 import { startAuditCleanup } from "./jobs/audit-cleanup.js";
@@ -129,7 +130,7 @@ export async function createApp(
     });
   }
   app.register(healthRoutes, { repository });
-  app.register(desktopRoutes, { repository, sessionSecret: options.adminToken, keySet });
+  app.register(desktopRoutes, { repository, sessionSecret: options.adminToken, keySet, mfaTracker: createMfaSetupTracker() });
   app.register(marketplaceRoutes, { prefix: "/v1/marketplace" });
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", async (request, reply) => {
