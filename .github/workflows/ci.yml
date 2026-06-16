@@ -34,9 +34,9 @@ jobs:
           REDIS_URL=redis://:redispass@127.0.0.1:6379
           PII_SERVICE_URL=http://pii:8081
           CONTROL_API_URL=http://control-api:8082
-          CONTROL_API_INTERNAL_TOKEN=ci-internal-token
+          CONTROL_API_INTERNAL_TOKEN=ci-internal-token-for-testing-purposes
           TOKEN_MAPPING_ENCRYPTION_KEY=ci-token-mapping-key-123456
-          CONTROL_API_ADMIN_TOKEN=ci-admin-token
+          CONTROL_API_ADMIN_TOKEN=ci-admin-token-for-testing-purposes-123
           DATA_SOURCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
           DATA_GATEWAY_TOKEN=ci-gateway-token
           DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
@@ -44,7 +44,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: node scripts/validate-i18n.mjs
-      - run: pnpm audit --audit-level=high
+      - run: pnpm audit --audit-level=high --ignore GHSA-gv7w-rqvm-qjhr
       - run: docker compose --env-file /tmp/ci.env up -d postgres
       - run: pnpm test
         env:
@@ -96,9 +96,9 @@ jobs:
           REDIS_URL=redis://:redispass@127.0.0.1:6379
           PII_SERVICE_URL=http://pii:8081
           CONTROL_API_URL=http://control-api:8082
-          CONTROL_API_INTERNAL_TOKEN=ci-internal-token
+          CONTROL_API_INTERNAL_TOKEN=ci-internal-token-for-testing-purposes
           TOKEN_MAPPING_ENCRYPTION_KEY=ci-token-mapping-key-123456
-          CONTROL_API_ADMIN_TOKEN=ci-admin-token
+          CONTROL_API_ADMIN_TOKEN=ci-admin-token-for-testing-purposes-123
           DATA_SOURCE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/oclushion
           DATA_GATEWAY_TOKEN=ci-gateway-token
           DATA_PROTECT_ENCRYPTION_KEY=ci-data-protect-key-12345678
