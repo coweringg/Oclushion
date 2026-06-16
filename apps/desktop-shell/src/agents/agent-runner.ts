@@ -342,7 +342,7 @@ function confirmAgentCommand(command: string, reason: string): boolean {
 }
 
 function estimateCredits(model: string, characters: number): number {
-  if (/^(local|ollama)\/\//iu.test(model)) {
+  if (/^(local|ollama)\//iu.test(model)) {
     return 0;
   }
   return Math.max(1, Math.ceil(characters / 4 / 1000));

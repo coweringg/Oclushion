@@ -65,13 +65,13 @@ export class ProjectMemoryService {
       lastUsedAt: now,
       usageCount: 0,
     };
-    
-    const embeddingVec = await semanticEmbedder.embed(entry.content);
-    if (embeddingVec) {
-      entry.embedding = embeddingVec;
-    }
 
     if (this.database) {
+      const embeddingVec = await semanticEmbedder.embed(entry.content);
+      if (embeddingVec) {
+        entry.embedding = embeddingVec;
+      }
+
       await this.database.execute(
         `INSERT INTO project_memory
          (id, type, content, tags, source, confidence, created_at, last_used_at, usage_count, embedding)
@@ -116,15 +116,21 @@ export class ProjectMemoryService {
 
   public async search(query: string, limit = 5): Promise<MemoryEntry[]> {
     const normalizedQuery = escapeFtsQuery(query);
+
+    if (!this.database) {
+      return (await this.list())
+        .filter((entry) => entry.content.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, limit);
+    }
+
     const queryEmbedding = await semanticEmbedder.embed(query);
 
     if (!normalizedQuery && !queryEmbedding) {
       return (await this.list()).slice(0, limit);
     }
 
-    if (this.database) {
-      let ftsRows: any[] = [];
-      if (normalizedQuery) {
+    let ftsRows: any[] = [];
+    if (normalizedQuery) {
         ftsRows = await this.database.select(
           `SELECT pm.id, fts.rank as fts_rank
            FROM project_memory_fts fts
@@ -167,11 +173,6 @@ export class ProjectMemoryService {
         await this.markUsed(top.map((m) => m.id));
       }
       return top.length > 0 ? top : scoredEntries.slice(0, limit).map(e => e.memory);
-    }
-
-    return (await this.list())
-      .filter((entry) => entry.content.toLowerCase().includes(query.toLowerCase()))
-      .slice(0, limit);
   }
 
   public async list(): Promise<MemoryEntry[]> {

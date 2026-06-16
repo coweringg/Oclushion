@@ -1,6 +1,19 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-const LOG_LEVEL: LogLevel = (import.meta.env.VITE_LOG_LEVEL as LogLevel) || 'info';
+function readLogLevel(): LogLevel {
+  if (typeof process !== 'undefined' && process.env?.VITE_LOG_LEVEL) {
+    return process.env.VITE_LOG_LEVEL as LogLevel;
+  }
+  try {
+    const fromMeta = (import.meta as Record<string, unknown>)?.env as Record<string, unknown> | undefined;
+    if (fromMeta && typeof fromMeta.VITE_LOG_LEVEL === 'string') {
+      return fromMeta.VITE_LOG_LEVEL as LogLevel;
+    }
+  } catch {}
+  return 'info';
+}
+
+const LOG_LEVEL: LogLevel = readLogLevel();
 const LOG_LEVELS: Record<LogLevel, number> = { debug: 0, info: 1, warn: 2, error: 3 };
 
 const REMOTE_LOG_ENDPOINT = import.meta.env.VITE_REMOTE_LOG_ENDPOINT as string | undefined;

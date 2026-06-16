@@ -2,6 +2,7 @@ import { logger } from "../utils/logger";
 import { AnthropicProvider } from "./anthropic.provider";
 import { LMStudioProvider } from "./lmstudio.provider";
 import { OllamaProvider } from "./ollama.provider";
+import { OpenAIProvider } from "./openai.provider";
 import type { ILLMProvider, LLMGenerateRequest, LLMGenerateResponse, StreamChunk } from "./provider";
 import { withRetry } from "./retry";
 import { estimateTokens, getModelTokenLimit, truncateToTokenLimit } from "./token-estimator";

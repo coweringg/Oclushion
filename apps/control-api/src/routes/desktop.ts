@@ -21,7 +21,7 @@ import {
   verifyRecoveryCode,
   buildTotpUri,
 } from "../auth/totp.service.js";
-import { createMfaSetupTracker, type MfaSetupTracker } from "../auth/mfa-tracker.js";
+import type { MfaSetupTracker } from "../auth/mfa-tracker.js";
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_WINDOW_MS = 15 * 60 * 1000;
@@ -129,7 +129,10 @@ const desktopRoutes: FastifyPluginAsync<{
   keySet?: KeySet;
   mfaTracker?: MfaSetupTracker;
 }> = async (app, options) => {
-  const mfaTracker = options.mfaTracker ?? createMfaSetupTracker();
+  const mfaTracker = options.mfaTracker;
+  if (!mfaTracker) {
+    throw new Error("MfaSetupTracker is required. Pass it via plugin options.");
+  }
   app.register(async (authApp) => {
     authApp.post("/v1/auth/register", { schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
     const body = registerSchema.parse(request.body);

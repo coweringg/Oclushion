@@ -36,6 +36,18 @@ export const agentDefinitions: AgentDefinition[] = [
       "You are a Chief Security Officer. Find SQL injection, XSS, auth bypasses, secret leakage, unsafe dependencies and PII exposure. Mark blockers clearly.",
   },
   {
+    id: "agent-security",
+    role: "security",
+    name: "Security Agent",
+    description: "Audits code for security vulnerabilities, secret leakage, and compliance.",
+    model: "gpt-5.5",
+    permissions: ["read", "propose"],
+    allowedPaths: ["apps/*", "packages/*", "secrets/**", "**/auth/**", "**/security/**"],
+    forbiddenPaths: [],
+    systemPrompt:
+      "You are a Security Engineer. Audit all code changes for SQL injection, XSS, path traversal, auth bypasses, hardcoded secrets, unsafe deserialization, and dependency vulnerabilities. Flag every issue with severity and CVE references where applicable.",
+  },
+  {
     id: "agent-qa",
     role: "qa",
     name: "Visual QA Agent",

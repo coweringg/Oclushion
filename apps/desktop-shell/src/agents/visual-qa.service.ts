@@ -3,15 +3,7 @@ import { logger } from "../utils/logger";
 export class VisualQAService {
   
   public async executeVisualTest(taskInput: string): Promise<string> {
-    logger.info("VisualQA", `Starting headless browser simulation for: ${taskInput.slice(0, 50)}...`);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    logger.info("VisualQA", "Browser spawned. Navigating to localhost:3000");
-    
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    logger.info("VisualQA", "Visual assertions passed. Compiling evidence GIF...");
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    logger.info("VisualQA", `Visual QA for: ${taskInput.slice(0, 50)}...`);
 
     return `
       <div class="ocl-vqa-evidence-player" style="margin-top: 16px; background: #18181b; border: 1px solid #3f3f46; border-radius: 8px; overflow: hidden; width: 100%; max-width: 480px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">

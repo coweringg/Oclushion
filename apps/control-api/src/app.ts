@@ -130,7 +130,11 @@ export async function createApp(
     });
   }
   app.register(healthRoutes, { repository });
-  app.register(desktopRoutes, { repository, sessionSecret: options.adminToken, keySet, mfaTracker: createMfaSetupTracker() });
+  const mfaTracker = createMfaSetupTracker();
+  app.register(desktopRoutes, { repository, sessionSecret: options.adminToken, keySet, mfaTracker });
+  app.addHook("onClose", async () => {
+    await mfaTracker.close?.();
+  });
   app.register(marketplaceRoutes, { prefix: "/v1/marketplace" });
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", async (request, reply) => {

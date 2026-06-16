@@ -6,6 +6,7 @@ const MFA_TRACKER_KEY_PREFIX = "mfa-setup:";
 export interface MfaSetupTracker {
   isInProgress(userId: string): Promise<boolean>;
   markInProgress(userId: string): Promise<void>;
+  close?(): Promise<void>;
 }
 
 export function createMfaSetupTracker(redisUrl?: string): MfaSetupTracker {
@@ -32,6 +33,10 @@ class InMemoryMfaSetupTracker implements MfaSetupTracker {
   async markInProgress(userId: string): Promise<void> {
     this.state.set(userId, Date.now());
   }
+
+  async close(): Promise<void> {
+    this.state.clear();
+  }
 }
 
 class RedisMfaSetupTracker implements MfaSetupTracker {
@@ -39,10 +44,8 @@ class RedisMfaSetupTracker implements MfaSetupTracker {
 
   constructor(redisUrl: string) {
     this.redis = new Redis(redisUrl, {
-      maxRetriesPerRequest: 1,
-      lazyConnect: true,
-      enableOfflineQueue: false,
-      enableReadyCheck: false,
+      maxRetriesPerRequest: 3,
+      retryStrategy: (times) => Math.min(times * 50, 2000),
     });
     this.redis.on("error", () => {});
   }
@@ -61,5 +64,9 @@ class RedisMfaSetupTracker implements MfaSetupTracker {
       await this.redis.setex(`${MFA_TRACKER_KEY_PREFIX}${userId}`, MFA_SETUP_TTL_SECONDS, "1");
     } catch {
     }
+  }
+
+  async close(): Promise<void> {
+    await this.redis.quit().catch(() => {});
   }
 }
