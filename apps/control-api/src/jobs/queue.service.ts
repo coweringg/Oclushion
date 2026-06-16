@@ -31,11 +31,16 @@ export class JobQueueService {
     this.connection.on("error", () => {});
   }
 
+  private static sanitizeQueueName(type: string): string {
+    return type.replace(/:/g, "-");
+  }
+
   public getQueue(type: JobType): Queue {
-    let queue = this.queues.get(type);
+    const name = JobQueueService.sanitizeQueueName(type);
+    let queue = this.queues.get(name as JobType);
     if (!queue) {
-      queue = new Queue(type, { connection: this.connection, defaultJobOptions: DEFAULT_JOB_OPTIONS });
-      this.queues.set(type, queue);
+      queue = new Queue(name, { connection: this.connection, defaultJobOptions: DEFAULT_JOB_OPTIONS });
+      this.queues.set(name as JobType, queue);
     }
     return queue;
   }
@@ -46,7 +51,8 @@ export class JobQueueService {
   }
 
   public createWorker<T extends JobType>(type: T, handler: (job: Job<JobPayloads[T]>) => Promise<void>, concurrency = 1): Worker {
-    const worker = new Worker<JobPayloads[T]>(type, async (job) => handler(job), {
+    const name = JobQueueService.sanitizeQueueName(type);
+    const worker = new Worker<JobPayloads[T]>(name, async (job) => handler(job), {
       connection: this.connection,
       concurrency,
       lockDuration: 60_000,

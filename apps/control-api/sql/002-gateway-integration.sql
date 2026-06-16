@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS client_api_keys (
   last_used_at TIMESTAMPTZ,
   created_by TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  revoked_at TIMESTAMPTZ
+  revoked_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ
 );
 
 ALTER TABLE client_api_keys
