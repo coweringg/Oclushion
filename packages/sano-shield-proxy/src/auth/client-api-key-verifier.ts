@@ -1,4 +1,12 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
+
+function apiKeyPepper(): string {
+  return process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
+}
+
+function hashApiKey(apiKey: string): string {
+  return createHmac("sha256", apiKeyPepper()).update(apiKey).digest("hex");
+}
 
 import type { GatewayPrincipal } from "@oclushion/shared";
 
@@ -24,7 +32,7 @@ export class PostgresClientApiKeyResolver implements ClientApiKeyResolver {
       return null;
     }
 
-    const keyHash = createHash("sha256").update(apiKey).digest("hex");
+    const keyHash = hashApiKey(apiKey);
     const result = await this.client.query(
       `UPDATE client_api_keys
        SET last_used_at = NOW()

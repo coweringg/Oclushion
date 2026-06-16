@@ -437,6 +437,7 @@ const controlRoutes: FastifyPluginAsync<{ repository: ControlRepository }> = asy
   );
 
   app.post("/v1/organizations/:organizationId/connectors/:provider/oauth/start", {
+    config: { rateLimit: { max: 20, timeWindow: "1 minute" } },
     schema: s(["Connectors"], "Start OAuth flow for connector", "startConnectorOAuth", {
       params: {
         type: "object", required: ["organizationId", "provider"],
@@ -456,6 +457,7 @@ const controlRoutes: FastifyPluginAsync<{ repository: ControlRepository }> = asy
   });
 
   app.post("/v1/organizations/:organizationId/connectors/:provider/oauth/complete", {
+    config: { rateLimit: { max: 20, timeWindow: "1 minute" } },
     schema: s(["Connectors"], "Complete OAuth flow for connector", "completeConnectorOAuth", {
       params: {
         type: "object", required: ["organizationId", "provider"],

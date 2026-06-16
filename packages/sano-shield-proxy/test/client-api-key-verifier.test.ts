@@ -1,4 +1,9 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
+
+function hashApiKey(apiKey: string): string {
+  const pepper = process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
+  return createHmac("sha256", pepper).update(apiKey).digest("hex");
+}
 
 import { describe, expect, it } from "vitest";
 
@@ -7,7 +12,7 @@ import { PostgresClientApiKeyResolver } from "../src/auth/client-api-key-verifie
 describe("client API key resolver", () => {
   it("hashes client credentials and returns a tenant-aware principal", async () => {
     const apiKey = "oclushion_live_abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
-    const expectedHash = createHash("sha256").update(apiKey).digest("hex");
+    const expectedHash = hashApiKey(apiKey);
     const calls: unknown[][] = [];
     const resolver = new PostgresClientApiKeyResolver({
       query: async (_sql, values) => {
@@ -38,7 +43,7 @@ describe("client API key resolver", () => {
 
   it("accepts legacy Sano Shield client credentials during migration", async () => {
     const apiKey = "sano_live_abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
-    const expectedHash = createHash("sha256").update(apiKey).digest("hex");
+    const expectedHash = hashApiKey(apiKey);
     const resolver = new PostgresClientApiKeyResolver({
       query: async (_sql, values) => ({
         rowCount: values[0] === expectedHash && values[1] === "proxy:invoke" ? 1 : 0,

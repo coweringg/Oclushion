@@ -2,11 +2,15 @@ import {
   createCipheriv,
   createDecipheriv,
   createHash,
+  createHmac,
   randomBytes,
   timingSafeEqual,
+  subtle,
 } from "node:crypto";
 
 import { z } from "zod";
+
+const API_KEY_PEPPER = "oclushion-hmac-v1";
 
 export const connectorProviderSchema = z.enum(["google-drive", "slack", "github", "notion"]);
 export type ConnectorProvider = z.infer<typeof connectorProviderSchema>;
@@ -137,7 +141,13 @@ export type OAuthStart = {
   expiresAt: string;
 };
 
-export function createOAuthStart(input: {
+async function pkceChallenge(codeVerifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const hash = await subtle.digest("SHA-256", encoder.encode(codeVerifier));
+  return Buffer.from(hash).toString("base64url");
+}
+
+export async function createOAuthStart(input: {
   provider: ConnectorProvider;
   clientId: string;
   redirectUri: string;
@@ -145,12 +155,12 @@ export function createOAuthStart(input: {
   requestedScopes?: string[];
   ttlSeconds?: number;
   now?: Date;
-}): OAuthStart {
+}): Promise<OAuthStart> {
   const entry = connectorCatalog[input.provider];
   const scopes = validateConnectorScopes(input.provider, input.requestedScopes);
   const state = randomBytes(32).toString("base64url");
   const codeVerifier = randomBytes(48).toString("base64url");
-  const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
+  const codeChallenge = await pkceChallenge(codeVerifier);
   const stateHash = hashState(state);
   const expiresAt = new Date(
     (input.now?.getTime() ?? Date.now()) + (input.ttlSeconds ?? 600) * 1000,
@@ -178,7 +188,7 @@ export function createOAuthStart(input: {
 }
 
 export function hashState(state: string): string {
-  return createHash("sha256").update(state).digest("hex");
+  return createHmac("sha256", process.env.API_KEY_HASH_PEPPER ?? API_KEY_PEPPER).update(state).digest("hex");
 }
 
 export function safeCompareStateHash(state: string, expectedHash: string): boolean {
@@ -239,10 +249,30 @@ export function sanitizeConnectorResource(resource: ResourcePayload): {
 } {
   const counts: Record<string, number> = {};
   const seen: Record<string, number> = {};
-  const sanitizedContent = resource.content.replace(
-    /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})|(sk-[A-Za-z0-9_-]{16,})|(\b(?:\d[ -]*?){13,19}\b)/gi,
-    (match, email: string | undefined, apiKey: string | undefined, paymentCard: string | undefined) => {
-      const type = email ? "email" : apiKey ? "api_key" : paymentCard ? "payment_card" : "secret";
+  const emailReplaced = resource.content.replace(
+    /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi,
+    (...args) => {
+      const type = "email";
+      const index = seen[type] ?? 0;
+      seen[type] = index + 1;
+      counts[type] = (counts[type] ?? 0) + 1;
+      return `[${type.toUpperCase()}_${index}]`;
+    },
+  );
+  const apiKeyReplaced = emailReplaced.replace(
+    /(sk-[A-Za-z0-9_-]{16,})/gi,
+    (...args) => {
+      const type = "api_key";
+      const index = seen[type] ?? 0;
+      seen[type] = index + 1;
+      counts[type] = (counts[type] ?? 0) + 1;
+      return `[${type.toUpperCase()}_${index}]`;
+    },
+  );
+  const sanitizedContent = apiKeyReplaced.replace(
+    /(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)/g,
+    (...args) => {
+      const type = "payment_card";
       const index = seen[type] ?? 0;
       seen[type] = index + 1;
       counts[type] = (counts[type] ?? 0) + 1;
@@ -264,7 +294,7 @@ function deriveVaultKey(keyMaterial: string): Buffer {
   if (maybeBase64.length === 32) {
     return maybeBase64;
   }
-  return createHash("sha256").update(keyMaterial).digest();
+  return createHmac("sha256", process.env.API_KEY_HASH_PEPPER ?? API_KEY_PEPPER).update(keyMaterial).digest();
 }
 
 function unique(values: string[]): string[] {

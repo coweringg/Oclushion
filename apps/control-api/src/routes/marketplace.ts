@@ -11,6 +11,11 @@ const CATALOG_PATH = process.env.MARKETPLACE_CATALOG_PATH ?? join(CATALOG_DIR, "
 const SKILLS_DIR = process.env.MARKETPLACE_SKILLS_DIR ?? join(CATALOG_DIR, "skills");
 const CACHE_MAX_AGE = 3600;
 
+function isValidSkillId(id: string): boolean {
+  if (!id || id.length > 256) return false;
+  return /^[a-zA-Z0-9_.-]+$/.test(id) && !id.includes("..");
+}
+
 type SkillEntry = {
   id: string;
   name: string;
@@ -115,6 +120,9 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
     }),
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!isValidSkillId(id)) {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     const catalog = getCatalog();
     const skill = catalog.skills.find((s) => s.id === id);
     if (!skill) {
@@ -144,6 +152,9 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
     }),
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!isValidSkillId(id)) {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     const catalog = getCatalog();
     const skill = catalog.skills.find((s) => s.id === id);
     if (!skill) {
@@ -179,6 +190,9 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
     }),
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!isValidSkillId(id)) {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     const catalog = getCatalog();
     const skill = catalog.skills.find((s) => s.id === id);
     if (!skill) {
@@ -197,6 +211,9 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
     }),
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
+    if (!isValidSkillId(id)) {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     const catalog = getCatalog();
     const skill = catalog.skills.find((s) => s.id === id);
     if (!skill) {

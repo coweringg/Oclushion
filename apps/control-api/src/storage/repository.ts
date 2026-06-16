@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 
 import type { Pool, PoolClient, QueryResultRow } from "pg";
 
@@ -912,7 +912,8 @@ export class PostgresControlRepository implements ControlRepository {
       const id = randomUUID();
       const apiKey = `oclushion_live_${randomBytes(32).toString("base64url")}`;
       const keyPrefix = apiKey.slice(0, 18);
-      const keyHash = createHash("sha256").update(apiKey).digest("hex");
+      const pepper = process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
+      const keyHash = createHmac("sha256", pepper).update(apiKey).digest("hex");
       const expiresAt = input.expiresAt ?? (() => {
         const d = new Date();
         d.setDate(d.getDate() + 90);
@@ -1008,7 +1009,8 @@ export class PostgresControlRepository implements ControlRepository {
       const newId = randomUUID();
       const newApiKey = `oclushion_live_${randomBytes(32).toString("base64url")}`;
       const newKeyPrefix = newApiKey.slice(0, 18);
-      const newKeyHash = createHash("sha256").update(newApiKey).digest("hex");
+      const pepper = process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
+      const newKeyHash = createHmac("sha256", pepper).update(newApiKey).digest("hex");
       const newExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
 
       await client.query(
@@ -1397,7 +1399,7 @@ export class PostgresControlRepository implements ControlRepository {
     requestedScopes?: string[];
   }): Promise<ConnectorOAuthStartResult> {
     const provider = connectorProviderSchema.parse(input.provider);
-    const oauth = createOAuthStart({
+    const oauth = await createOAuthStart({
       provider,
       clientId: input.clientId,
       redirectUri: input.redirectUri,

@@ -53,20 +53,28 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
 def detect_entities(text: str) -> list[Detection]:
     detections: list[Detection] = []
     detections.extend(detect_payment_cards(text))
-    detections.extend(detect_regex(text, "email", r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"))
-    detections.extend(
-        detect_regex(
-            text,
-            "phone",
-            r"(?:(?<!\d)\+\d{1,3}[\s.-]?(?:\d[\s.-]?){7,13}\d(?!\d)|"
-            r"\b(?:tel(?:éfono)?|phone)\s*[:.]?\s*(?:\d[\s.-]?){7,13}\d(?!\d))",
-        )
-    )
+    detections.extend(detect_email(text))
+    detections.extend(detect_phone(text))
     detections.extend(detect_regex(text, "api_key", r"\bsk-(?:proj-)?[A-Za-z0-9_-]{12,}\b"))
     detections.extend(detect_regex(text, "access_token", r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b"))
     detections.extend(detect_regex(text, "private_key", r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"))
     detections.extend(detect_person_names(text))
     return remove_overlaps(detections)
+
+def detect_email(text: str) -> list[Detection]:
+    pattern = re.compile(r"\b[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,}\b")
+    return [
+        Detection(type="email", start=m.start(), end=m.end(), confidence=1.0)
+        for m in pattern.finditer(text)
+    ]
+
+def detect_phone(text: str) -> list[Detection]:
+    detections: list[Detection] = []
+    for m in re.finditer(r"\+\d{1,3}[\s.-]?(?:\d[\s.-]?){7,13}\d(?!\d)", text):
+        detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
+    for m in re.finditer(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*(?:\d[\s.-]?){6,12}\d(?!\d)", text, re.IGNORECASE):
+        detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
+    return detections
 
 def detect_regex(text: str, entity_type: EntityType, pattern: str) -> list[Detection]:
     return [

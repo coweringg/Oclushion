@@ -31,7 +31,7 @@ export function validateSelectSql(
   }
 
   const match = withoutTrailingSemicolon.match(
-    /^select\s+([\s\S]+?)\s+from\s+([a-zA-Z_][\w."]*)([\s\S]*)$/iu,
+    /^select\s+([\w.*"`,()\s]+?)\s+from\s+([a-zA-Z_][\w."]*)((?:\s+(?:where|join|left|right|inner|cross|outer|group|having|order|limit|offset)[\s\S]*)?)$/iu,
   );
   if (!match?.[1] || !match[2]) {
     throw new SqlRejectedError("Only simple SELECT ... FROM queries are supported in this phase.");

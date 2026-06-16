@@ -134,7 +134,7 @@ const desktopRoutes: FastifyPluginAsync<{
     throw new Error("MfaSetupTracker is required. Pass it via plugin options.");
   }
   app.register(async (authApp) => {
-    authApp.post("/v1/auth/register", { schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
+    authApp.post("/v1/auth/register", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } }, schema: s(["Auth"], "Register a new user account", "authRegister") }, async (request, reply) => {
     const body = registerSchema.parse(request.body);
     if (!isPasswordStrong(body.password)) {
       return reply.code(400).send({
@@ -159,7 +159,7 @@ const desktopRoutes: FastifyPluginAsync<{
     }
   });
 
-  authApp.post("/v1/auth/login", { schema: s(["Auth"], "Login with email and password", "authLogin") }, async (request, reply) => {
+  authApp.post("/v1/auth/login", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } }, schema: s(["Auth"], "Login with email and password", "authLogin") }, async (request, reply) => {
     const body = loginSchema.parse(request.body);
     const clientIp = request.ip;
     const lockout = checkLoginLockout(body.email, clientIp);
@@ -189,7 +189,7 @@ const desktopRoutes: FastifyPluginAsync<{
     code: z.string().min(1).max(20),
   });
 
-  app.post("/v1/auth/mfa/challenge", { schema: s(["Auth"], "Complete MFA challenge with TOTP or recovery code", "mfaChallenge") }, async (request, reply) => {
+  app.post("/v1/auth/mfa/challenge", { config: { rateLimit: { max: 30, timeWindow: "1 minute" } }, schema: s(["Auth"], "Complete MFA challenge with TOTP or recovery code", "mfaChallenge") }, async (request, reply) => {
     const body = mfaChallengeSchema.parse(request.body);
     const payload = verifyMfaChallengeToken(body.mfaToken, options.sessionSecret, options.keySet);
     if (!payload) {
@@ -361,7 +361,7 @@ const desktopRoutes: FastifyPluginAsync<{
 
   const ssoService = new SSOService(options.repository);
 
-  app.post("/v1/auth/sso/authorize", { schema: s(["SSO"], "Begin SSO authorization flow", "ssoAuthorize") }, async (request, reply) => {
+  app.post("/v1/auth/sso/authorize", { config: { rateLimit: { max: 30, timeWindow: "1 minute" } }, schema: s(["SSO"], "Begin SSO authorization flow", "ssoAuthorize") }, async (request, reply) => {
     const body = z.object({ domain: z.string().min(1).max(255) }).parse(request.body);
     const row = await options.repository.getSSOConnectionByDomain({ domain: body.domain });
     if (!row) {
@@ -375,7 +375,7 @@ const desktopRoutes: FastifyPluginAsync<{
     return reply.send({ redirectUrl, flowId });
   });
 
-  app.get("/v1/auth/sso/callback", { schema: s(["SSO"], "Handle SSO OIDC callback", "ssoCallback") }, async (request, reply) => {
+  app.get("/v1/auth/sso/callback", { config: { rateLimit: { max: 60, timeWindow: "1 minute" } }, schema: s(["SSO"], "Handle SSO OIDC callback", "ssoCallback") }, async (request, reply) => {
     const query = z.object({ code: z.string(), state: z.string().optional() }).parse(request.query);
     const profile = await ssoService.getProfileFromCode(query.code);
     const flowId = query.state;
@@ -402,7 +402,7 @@ const desktopRoutes: FastifyPluginAsync<{
     return reply.send({ token, user: serialized });
   });
 
-  app.get("/v1/auth/sso/poll", { schema: s(["SSO"], "Poll for SSO completion", "ssoPoll") }, async (request, reply) => {
+  app.get("/v1/auth/sso/poll", { config: { rateLimit: { max: 60, timeWindow: "1 minute" } }, schema: s(["SSO"], "Poll for SSO completion", "ssoPoll") }, async (request, reply) => {
     const query = z.object({ flowId: z.string().uuid() }).parse(request.query);
     const result = ssoService.pollFlow(query.flowId);
     return reply.send(result);

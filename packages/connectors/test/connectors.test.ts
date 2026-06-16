@@ -31,8 +31,8 @@ describe("Connectors framework", () => {
     expect(() => validateConnectorScopes("slack", ["admin"])).toThrow(ConnectorScopeError);
   });
 
-  it("generates PKCE OAuth starts without leaking the verifier in the URL", () => {
-    const start = createOAuthStart({
+  it("generates PKCE OAuth starts without leaking the verifier in the URL", async () => {
+    const start = await createOAuthStart({
       provider: "google-drive",
       clientId: "sano-local-client",
       redirectUri: "http://127.0.0.1:3000/oauth/callback",
