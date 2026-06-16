@@ -6,7 +6,7 @@ pub struct LineBlame;
 impl LineBlame {
     pub fn blame_file(repo: &Repository, path: &str) -> crate::Result<Vec<BlameLine>> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
         let full_path = workdir.join(path);
 
@@ -17,7 +17,7 @@ impl LineBlame {
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let mut head_mut = head;
         let head_oid_str = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?
             .id()
             .to_string();

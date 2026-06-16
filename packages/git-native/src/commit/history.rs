@@ -22,7 +22,7 @@ impl CommitHistory {
         let mut oids = Vec::new();
 
         if let Ok(mut head_mut) = Ok::<_, ()>(head) {
-            if let Ok(commit) = head_mut.peel_to_commit_in_place() {
+            if let Ok(commit) = head_mut.peel_to_commit() {
                 oids.push(commit.id().detach());
                 let mut current = commit;
                 for _ in 1..max_count {
@@ -46,8 +46,11 @@ impl CommitHistory {
                 let decoded = commit.decode()
                     .map_err(|e| crate::Error::Git(e.to_string()))?;
                 let message = decoded.message.to_string();
-                let author_name = decoded.author.name.to_string();
-                let author_email = decoded.author.email.to_string();
+                let author = decoded.author()
+                    .map_err(|e| crate::Error::Git(e.to_string()))?;
+                let author_name = author.name.to_string();
+                let author_email = author.email.to_string();
+                let author_time = author.time().unwrap_or_default();
 
                 let parents: Vec<String> = decoded.parents().map(|id| id.to_string()).collect();
 
@@ -57,7 +60,7 @@ impl CommitHistory {
                     message: message.trim().to_string(),
                     author: author_name,
                     author_email,
-                    timestamp: decoded.author.time.seconds,
+                    timestamp: author_time.seconds,
                     parents,
                 });
             }
@@ -81,6 +84,9 @@ impl CommitHistory {
         let decoded = commit.decode()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let message = decoded.message.to_string();
+        let author = decoded.author()
+            .map_err(|e| crate::Error::Git(e.to_string()))?;
+        let author_time = author.time().unwrap_or_default();
 
         let parents: Vec<String> = decoded.parents().map(|id| id.to_string()).collect();
 
@@ -88,9 +94,9 @@ impl CommitHistory {
             oid: oid.to_string(),
             short_oid: oid.to_string()[..7.min(oid.to_string().len())].to_string(),
             message: message.trim().to_string(),
-            author: decoded.author.name.to_string(),
-            author_email: decoded.author.email.to_string(),
-            timestamp: decoded.author.time.seconds,
+            author: author.name.to_string(),
+            author_email: author.email.to_string(),
+            timestamp: author_time.seconds,
             parents,
         })
     }

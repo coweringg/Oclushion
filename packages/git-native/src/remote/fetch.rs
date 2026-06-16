@@ -6,7 +6,7 @@ pub struct RemoteFetch;
 impl RemoteFetch {
     pub fn fetch(repo: &Repository, remote_name: &str) -> crate::Result<String> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")

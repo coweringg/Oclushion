@@ -10,7 +10,7 @@ impl AgentSandbox {
         path: impl AsRef<std::path::Path>,
     ) -> crate::Result<()> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let path_ref = path.as_ref();
@@ -40,7 +40,7 @@ impl AgentSandbox {
         path: impl AsRef<std::path::Path>,
     ) -> crate::Result<()> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")
@@ -65,7 +65,7 @@ impl AgentSandbox {
 
     pub fn list_agent_worktrees(repo: &Repository) -> crate::Result<Vec<String>> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")

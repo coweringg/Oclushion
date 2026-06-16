@@ -37,6 +37,9 @@ allowBuilds:
   unrs-resolver: true
 overrides:
   postcss: ">=8.5.10 <9"
+  js-yaml: ">=4.2.0"
+  "@babel/core": ">=7.29.6"
+  "@opentelemetry/core": ">=2.8.0"
 auditConfig:
   ignoreGhsas:
     - GHSA-gv7w-rqvm-qjhr

@@ -10,7 +10,7 @@ impl BranchMerge {
         msg: &str,
     ) -> crate::Result<String> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")
@@ -34,7 +34,7 @@ impl BranchMerge {
 
     pub fn detect_conflicts(repo: &Repository, branch_name: &str) -> crate::Result<Vec<String>> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")

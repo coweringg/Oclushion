@@ -5,7 +5,7 @@ pub struct WorkingTreeDiff;
 
 impl WorkingTreeDiff {
     pub fn diff_working_tree(repo: &Repository) -> crate::Result<Vec<DiffEntry>> {
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d,
             None => return Ok(Vec::new()),
         };

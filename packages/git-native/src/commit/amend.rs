@@ -11,7 +11,7 @@ impl CommitAmend {
 
         let mut head_mut = head;
         let current_commit = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
 
         let tree_id = current_commit.tree_id()
@@ -26,30 +26,33 @@ impl CommitAmend {
             .unwrap_or_default()
             .as_secs();
 
+        let author_sig = decoded.author()
+            .map_err(|e| crate::Error::Git(e.to_string()))?;
+        let committer_sig = decoded.committer()
+            .map_err(|e| crate::Error::Git(e.to_string()))?;
+
         let commit = gix_object::Commit {
             tree: tree_id.detach(),
             parents: parent_ids.into(),
             author: gix::actor::Signature {
-                name: decoded.author.name.to_owned(),
-                email: decoded.author.email.to_owned(),
+                name: author_sig.name.to_owned(),
+                email: author_sig.email.to_owned(),
                 time: gix::date::Time {
                     seconds: now as i64,
                     offset: 0,
-                    sign: gix::date::time::Sign::Plus,
                 },
             },
             committer: gix::actor::Signature {
-                name: decoded.committer.name.to_owned(),
-                email: decoded.committer.email.to_owned(),
+                name: committer_sig.name.to_owned(),
+                email: committer_sig.email.to_owned(),
                 time: gix::date::Time {
                     seconds: now as i64,
                     offset: 0,
-                    sign: gix::date::time::Sign::Plus,
                 },
             },
             encoding: decoded.encoding.map(|e| e.to_owned()),
             message: msg.into(),
-            extra_headers: decoded.extra_headers.iter().map(|(k, v)| (k.to_vec().into(), v.clone().into_owned())).collect(),
+            extra_headers: decoded.extra_headers.iter().map(|(k, v)| (k.to_vec().into(), v.clone().into_owned().into())).collect(),
         };
 
         let commit_id = repo
@@ -78,7 +81,7 @@ impl CommitAmend {
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let mut head_mut = head;
         let current_commit = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
 
         let msg_raw = current_commit.message_raw_sloppy().to_string();

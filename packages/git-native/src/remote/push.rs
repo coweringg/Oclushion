@@ -6,7 +6,7 @@ pub struct RemotePush;
 impl RemotePush {
     pub fn push(repo: &Repository, remote_name: &str, branch: &str) -> crate::Result<String> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")
@@ -27,7 +27,7 @@ impl RemotePush {
 
     pub fn push_all(repo: &Repository) -> crate::Result<String> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")

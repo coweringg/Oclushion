@@ -40,7 +40,7 @@ impl SubmoduleManager {
 
     pub fn update_submodules(repo: &Repository) -> crate::Result<()> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new("git")

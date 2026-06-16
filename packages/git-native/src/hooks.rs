@@ -17,7 +17,7 @@ impl GitHooks {
         }
 
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new(&hook_path)
@@ -45,7 +45,7 @@ impl GitHooks {
         }
 
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let _ = Command::new(&hook_path)
@@ -64,7 +64,7 @@ impl GitHooks {
         }
 
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         let output = Command::new(&hook_path)

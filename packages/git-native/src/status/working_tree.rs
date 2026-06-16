@@ -6,7 +6,7 @@ pub struct WorkingTreeStatus;
 impl WorkingTreeStatus {
     pub fn status(repo: &Repository) -> crate::Result<Vec<StatusEntry>> {
         let mut entries = Vec::new();
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d.to_path_buf(),
             None => return Ok(entries),
         };
@@ -15,7 +15,7 @@ impl WorkingTreeStatus {
             let head = repo.head().ok();
             match head.and_then(|h| {
                 let mut h_mut = h;
-                h_mut.peel_to_commit_in_place().ok()
+                h_mut.peel_to_commit().ok()
             }) {
                 Some(commit) => {
                     if let Ok(tree) = commit.tree() {

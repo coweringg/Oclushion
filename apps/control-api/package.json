@@ -32,6 +32,6 @@
   "devDependencies": {
     "@oclushion/config": "workspace:*",
     "@types/pg": "^8.15.6",
-    "tsx": "^4.22.3"
+    "tsx": "^4.22.4"
   }
 }

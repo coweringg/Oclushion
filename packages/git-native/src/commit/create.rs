@@ -10,7 +10,7 @@ impl CommitCreate {
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let mut head_mut = head;
         let parent_commit = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let tree_id = parent_commit.tree_id()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
@@ -26,7 +26,7 @@ impl CommitCreate {
         let head = repo.head().ok();
         let parent_ids: Vec<gix::ObjectId> = if let Some(h) = head {
             if let Ok(mut head_mut) = Ok::<_, ()>(h) {
-                if let Ok(commit) = head_mut.peel_to_commit_in_place() {
+                if let Ok(commit) = head_mut.peel_to_commit() {
                     vec![commit.id().detach()]
                 } else {
                     Vec::new()
@@ -60,7 +60,6 @@ impl CommitCreate {
                 time: gix::date::Time {
                     seconds: now as i64,
                     offset: 0,
-                    sign: gix::date::time::Sign::Plus,
                 },
             },
             committer: gix::actor::Signature {
@@ -69,7 +68,6 @@ impl CommitCreate {
                 time: gix::date::Time {
                     seconds: now as i64,
                     offset: 0,
-                    sign: gix::date::time::Sign::Plus,
                 },
             },
             encoding: None,
@@ -107,13 +105,13 @@ impl CommitCreate {
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let mut head_mut = head;
         let parent_commit = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let tree_id = parent_commit.tree_id()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let parent_id = parent_commit.id();
 
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d,
             None => {
                 return Self::write_commit_with_parents(repo, tree_id.detach(), &[parent_id.detach()], msg);

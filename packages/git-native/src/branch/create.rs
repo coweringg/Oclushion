@@ -22,7 +22,7 @@ impl BranchCreate {
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let mut head_mut = head;
         let commit = head_mut
-            .peel_to_commit_in_place()
+            .peel_to_commit()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
         let oid = commit.id().detach();
         Self::create_branch(repo, name, oid)

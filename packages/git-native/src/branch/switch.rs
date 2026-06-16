@@ -23,7 +23,7 @@ impl BranchSwitch {
             .tree()
             .map_err(|e| crate::Error::Git(e.to_string()))?;
 
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d.to_path_buf(),
             None => return Ok(()),
         };
@@ -58,7 +58,7 @@ impl BranchSwitch {
         std::fs::write(git_dir.join("HEAD"), format!("{}\n", oid))
             .map_err(|e| crate::Error::Git(e.to_string()))?;
 
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d.to_path_buf(),
             None => return Ok(()),
         };

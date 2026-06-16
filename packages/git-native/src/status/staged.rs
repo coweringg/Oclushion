@@ -11,7 +11,7 @@ impl StagedStatus {
             let head = repo.head().ok();
             match head.and_then(|h| {
                 let mut h_mut = h;
-                h_mut.peel_to_commit_in_place().ok()
+                h_mut.peel_to_commit().ok()
             }) {
                 Some(commit) => {
                     if let Ok(tree) = commit.tree() {

@@ -5,7 +5,7 @@ pub struct LfsSupport;
 
 impl LfsSupport {
     pub fn is_lfs_enabled(repo: &Repository) -> bool {
-        let workdir = match repo.work_dir() {
+        let workdir = match repo.workdir() {
             Some(d) => d,
             None => return false,
         };
@@ -30,7 +30,7 @@ impl LfsSupport {
 
     pub fn track_file(repo: &Repository, pattern: &str) -> crate::Result<()> {
         let workdir = repo
-            .work_dir()
+            .workdir()
             .ok_or_else(|| crate::Error::Message("No working directory".to_string()))?;
 
         if !Self::is_lfs_installed() {
