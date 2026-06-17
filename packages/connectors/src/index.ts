@@ -5,6 +5,7 @@ import {
   pbkdf2Sync,
   randomBytes,
   timingSafeEqual,
+  webcrypto,
 } from "node:crypto";
 
 import { z } from "zod";
@@ -142,7 +143,7 @@ export type OAuthStart = {
 
 async function pkceChallenge(codeVerifier: string): Promise<string> {
   const encoder = new TextEncoder();
-  const hash = await subtle.digest("SHA-256", encoder.encode(codeVerifier));
+  const hash = await webcrypto.subtle.digest("SHA-256", encoder.encode(codeVerifier));
   return Buffer.from(hash).toString("base64url");
 }
 

@@ -69,7 +69,7 @@ def detect_email(text: str) -> list[Detection]:
     ]
 
 PHONE_PLUS_RE = re.compile(r"\+\d[\d\s.-]{6,20}(?!\d)(?![\d\s.-])")
-PHONE_WORD_RE = re.compile(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*[\d\s.-]{7,20}(?!\d)(?![\d\s.-])", re.IGNORECASE)
+PHONE_WORD_RE = re.compile(r"(?:tel(?:éfono)?|phone)[\s:.]{0,10}[\d\s.-]{7,20}(?!\d)(?![\d\s.-])", re.IGNORECASE)
 
 def detect_phone(text: str) -> list[Detection]:
     if len(text) > 5000:
@@ -97,8 +97,8 @@ def detect_person_names(text: str) -> list[Detection]:
     if len(text) > 5000:
         return []
     pattern = re.compile(
-        r"\b(?:soy|nombre\s+es|cliente\s*:\s*)\s+"
-        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}){1,20})(?:\W|$)",
+        r"\b(?:soy|nombre\s{0,10}es|cliente\s{0,10}:\s{0,10})\s{1,10}"
+        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}(?:\s{1,10}[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}){1,20})(?:\W|$)",
         re.IGNORECASE,
     )
     return [
