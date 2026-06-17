@@ -69,6 +69,8 @@ def detect_email(text: str) -> list[Detection]:
     ]
 
 def detect_phone(text: str) -> list[Detection]:
+    if len(text) > 5000:
+        return []
     detections: list[Detection] = []
     for m in re.finditer(r"\+\d{1,3}[\s.-]?\d(?:[\s.-]?\d){7,13}(?!\d)", text):
         detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
@@ -77,15 +79,19 @@ def detect_phone(text: str) -> list[Detection]:
     return detections
 
 def detect_regex(text: str, entity_type: EntityType, pattern: str) -> list[Detection]:
+    if len(text) > 5000:
+        return []
     return [
         Detection(type=entity_type, start=match.start(), end=match.end(), confidence=1.0)
         for match in re.finditer(pattern, text)
     ]
 
 def detect_person_names(text: str) -> list[Detection]:
+    if len(text) > 5000:
+        return []
     pattern = re.compile(
         r"\b(?:soy|nombre\s+es|cliente\s*:\s*)\s+"
-        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50})+)(?:\W|$)",
+        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}){1,20})(?:\W|$)",
         re.IGNORECASE,
     )
     return [
@@ -94,6 +100,8 @@ def detect_person_names(text: str) -> list[Detection]:
     ]
 
 def detect_payment_cards(text: str) -> list[Detection]:
+    if len(text) > 5000:
+        return []
     candidates = re.finditer(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)", text)
     return [
         Detection(type="payment_card", start=match.start(), end=match.end(), confidence=1.0)
