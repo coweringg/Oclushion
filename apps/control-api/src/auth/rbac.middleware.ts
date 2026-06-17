@@ -123,8 +123,11 @@ export async function rbacPlugin(fastify: FastifyInstance, opts: RbacPluginOptio
   fastify.decorateRequest("organizationId", null);
   fastify.decorateRequest("session", null);
 
+  fastify.addHook("onRoute", (routeOptions) => {
+    routeOptions.config = { ...routeOptions.config, rateLimit: { max: 120, timeWindow: "1 minute" } };
+  });
+
   fastify.addHook("preHandler", async (request) => {
-    // codeql-disable js/missing-rate-limiting — global rate limit registered before this plugin in app.ts
     const auth = request.headers.authorization;
     if (!auth?.startsWith("Bearer ")) return;
 
