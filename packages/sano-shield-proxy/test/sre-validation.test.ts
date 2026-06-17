@@ -15,7 +15,7 @@
 import { pbkdf2Sync, randomBytes } from "node:crypto";
 import { performance } from "node:perf_hooks";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import {
   resetAuthConfig,
@@ -226,8 +226,6 @@ describe("PHASE 1: 🔥 LOAD TEST — auth hot path under production burst", () 
   it("1b: load with mixed valid/invalid/rotated/malformed keys", async () => {
     const POOL_SIZE = 100;
     const keyPool = generateKeyPool(POOL_SIZE, 0.7);
-    const client = buildDbClient(keyPool);
-    const resolver = new PostgresClientApiKeyResolver(client);
     const TOTAL = 5_000;
 
     // Key mix: 50% valid pool matches, 25% rotated (valid prefix, wrong hash), 25% malformed

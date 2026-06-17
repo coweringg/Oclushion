@@ -24,13 +24,6 @@ function buildLegacyStoredHash(apiKey: string): string {
   return pbkdf2Sync(apiKey, TEST_PEPPER, 1, 32, "sha256").toString("hex");
 }
 
-function makeKey(prefixLetter: string, valid = true): string {
-  const body = valid
-    ? `${prefixLetter}${"0".repeat(63)}`
-    : `${prefixLetter}${"0".repeat(4)}!!!invalid!!!${"0".repeat(46)}`;
-  return `oclushion_live_${body}`;
-}
-
 /* ────────────────────────────────────────────────────────────────── */
 /*  FAKE DB CLIENT FACTORY                                            */
 /* ────────────────────────────────────────────────────────────────── */
@@ -128,7 +121,6 @@ describe("1. 🔥 LOAD TEST — auth hot path under 10k burst", () => {
     const totalRequests = 10_000;
     const keys: string[] = [];
     for (let i = 0; i < totalRequests; i++) {
-      const spec = keyPool[i % keyPool.length];
       keys.push(`oclushion_live_${String(i % keyCount).padStart(3, "0")}${"0".repeat(61)}`);
     }
 
@@ -211,7 +203,6 @@ describe("1b. counter accuracy under concurrent load", () => {
 
     await Promise.all(
       Array.from({ length: total }, (_, i) => {
-        const spec = keyPool[i % keyPool.length];
         const key = `oclushion_live_${String(i % 50).padStart(3, "0")}${"0".repeat(61)}`;
         return resolver.resolve(key, "proxy:invoke");
       }),

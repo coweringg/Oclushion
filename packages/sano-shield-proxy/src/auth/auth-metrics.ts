@@ -1,5 +1,3 @@
-import { performance } from "node:perf_hooks";
-
 interface Counter {
   inc(labels?: Record<string, string>): void;
   value(): number;
@@ -20,7 +18,7 @@ interface HistogramSnapshot {
   p99: number;
 }
 
-function makeCounter(name: string): Counter {
+function makeCounter(_name: string): Counter {
   let val = 0;
   return {
     inc() { val++; },
@@ -28,7 +26,7 @@ function makeCounter(name: string): Counter {
   };
 }
 
-function makeHistogram(buckets: number[] = [0.1, 0.5, 1, 2, 5, 10, 25, 50, 100, 500]): Histogram {
+function makeHistogram(_buckets: number[] = [0.1, 0.5, 1, 2, 5, 10, 25, 50, 100, 500]): Histogram {
   const values: number[] = [];
   return {
     observe(value: number) {
