@@ -7523,7 +7523,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-data-ai-data-scientist",
     "name": "Agent: Data Scientist",
-    "description": "Use this agent when you need to analyze data patterns, build predictive models, or extract statistical insights from datasets. Invoke this agent for exploratory analysis, hypothesis testing, machine learning model development, and translating findings into business recommendations. Specifically:\\\\n\\",
+    "description": "Use this agent when you need to analyze data patterns, build predictive models, or extract statistical insights from datasets. Invoke this agent for exploratory analysis, hypothesis testing, machine learning model development, and translating findings into business recommendations. Specifically:\\\\n\\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -7622,7 +7622,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-data-ai-machine-learning-engineer",
     "name": "Agent: Machine Learning Engineer",
-    "description": "Use this agent when you need to deploy, optimize, or serve machine learning models at scale in production environments. Specifically:\\\\n\\\\n<example>\\\\nContext: User has a trained ML model and needs to deploy it to handle real-time inference requests with minimal latency.\\\\nuser: \\",
+    "description": "Use this agent when you need to deploy, optimize, or serve machine learning models at scale in production environments. Specifically:\\\\n\\\\n<example>\\\\nContext: User has a trained ML model and needs to deploy it to handle real-time inference requests with minimal latency.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -9124,7 +9124,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-development-team-electron-pro",
     "name": "Agent: Electron Pro",
-    "description": "Use this agent when building Electron desktop applications that require native OS integration, cross-platform distribution, security hardening, and performance optimization. Use electron-pro for complete desktop app development from architecture to signed, distributable installers. Specifically:\\\\n\\",
+    "description": "Use this agent when building Electron desktop applications that require native OS integration, cross-platform distribution, security hardening, and performance optimization. Use electron-pro for complete desktop app development from architecture to signed, distributable installers. Specifically:\\\\n\\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -9479,7 +9479,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-development-tools-build-engineer",
     "name": "Agent: Build Engineer",
-    "description": "Use this agent when you need to optimize build performance, reduce compilation times, or scale build systems across growing teams. Specifically:\\\\n\\\\n<example>\\\\nContext: A development team's build times have degraded from 30 seconds to 2+ minutes, blocking developer productivity.\\\\nuser: \\",
+    "description": "Use this agent when you need to optimize build performance, reduce compilation times, or scale build systems across growing teams. Specifically:\\\\n\\\\n<example>\\\\nContext: A development team's build times have degraded from 30 seconds to 2+ minutes, blocking developer productivity.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -9705,7 +9705,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-development-tools-debugger",
     "name": "Agent: Debugger",
-    "description": "Use this agent when you need to diagnose and fix bugs, identify root causes of failures, or analyze error logs and stack traces to resolve issues. Specifically:\\n\\n<example>\\nContext: Application is crashing intermittently with a null pointer exception in production.\\nuser: \\",
+    "description": "Use this agent when you need to diagnose and fix bugs, identify root causes of failures, or analyze error logs and stack traces to resolve issues. Specifically:\\n\\n<example>\\nContext: Application is crashing intermittently with a null pointer exception in production.\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -10210,7 +10210,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-development-tools-tooling-engineer",
     "name": "Agent: Tooling Engineer",
-    "description": "Use this agent when you need to build or enhance developer tools including CLIs, code generators, build tools, and IDE extensions. Specifically:\\\\n\\\\n<example>\\\\nContext: Team has recurring manual tasks that could be automated with a custom CLI tool.\\\\nuser: \\",
+    "description": "Use this agent when you need to build or enhance developer tools including CLIs, code generators, build tools, and IDE extensions. Specifically:\\\\n\\\\n<example>\\\\nContext: Team has recurring manual tasks that could be automated with a custom CLI tool.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -10598,7 +10598,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-devops-infrastructure-deployment-engineer",
     "name": "Agent: Deployment Engineer",
-    "description": "Use this agent when designing, building, or optimizing CI/CD pipelines and deployment automation strategies. Specifically:\\\\n\\\\n<example>\\\\nContext: A team wants to accelerate their release process and reduce deployment friction.\\\\nuser: \\",
+    "description": "Use this agent when designing, building, or optimizing CI/CD pipelines and deployment automation strategies. Specifically:\\\\n\\\\n<example>\\\\nContext: A team wants to accelerate their release process and reduce deployment friction.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -11663,7 +11663,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-expert-advisors-agent-installer",
     "name": "Agent: Agent Installer",
-    "description": "Use this agent when the user wants to discover, browse, or install Claude Code agents from the awesome-claude-code-subagents repository. Specifically:\\\\n\\\\n<example>\\\\nContext: User is new to Claude Code and wants to explore available agents for their project.\\\\nuser: \\",
+    "description": "Use this agent when the user wants to discover, browse, or install Claude Code agents from the awesome-claude-code-subagents repository. Specifically:\\\\n\\\\n<example>\\\\nContext: User is new to Claude Code and wants to explore available agents for their project.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -13420,7 +13420,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-mcp-dev-team-mcp-developer",
     "name": "Agent: Mcp Developer",
-    "description": "Use this agent when you need to build, debug, or optimize Model Context Protocol (MCP) servers and clients that connect AI systems to external tools and data sources. Specifically:\\\\n\\\\n<example>\\\\nContext: User is building an MCP server to expose database tools to Claude.\\\\nuser: \\",
+    "description": "Use this agent when you need to build, debug, or optimize Model Context Protocol (MCP) servers and clients that connect AI systems to external tools and data sources. Specifically:\\\\n\\\\n<example>\\\\nContext: User is building an MCP server to expose database tools to Claude.\\\\nuser: \\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -15747,7 +15747,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-realtime-websocket-engineer",
     "name": "Agent: Websocket Engineer",
-    "description": "Use this agent when implementing real-time bidirectional communication features using WebSockets, Socket.IO, or similar technologies at scale. Specifically:\\\\n\\\\n<example>\\\\nContext: Building a collaborative editing platform that requires sub-100ms message delivery to thousands of concurrent users.\\",
+    "description": "Use this agent when implementing real-time bidirectional communication features using WebSockets, Socket.IO, or similar technologies at scale. Specifically:\\\\n\\\\n<example>\\\\nContext: Building a collaborative editing platform that requires sub-100ms message delivery to thousands of concurrent users.\\" + "",
     "category": "fullstack",
     "tier": "pro",
     "version": "1.0.0",
@@ -16078,7 +16078,7 @@ const skills: Skill[] = [
   {
     "id": "aitmpl-agent-security-penetration-tester",
     "name": "Agent: Penetration Tester",
-    "description": "Use this agent when you need to conduct authorized security penetration tests to identify real vulnerabilities through active exploitation and validation. Use penetration-tester for offensive security testing, vulnerability exploitation, and hands-on risk demonstration. Specifically:\\\\n\\\\n<example>\\",
+    "description": "Use this agent when you need to conduct authorized security penetration tests to identify real vulnerabilities through active exploitation and validation. Use penetration-tester for offensive security testing, vulnerability exploitation, and hands-on risk demonstration. Specifically:\\\\n\\\\n<example>\\" + "",
     "category": "security",
     "tier": "enterprise",
     "version": "1.0.0",

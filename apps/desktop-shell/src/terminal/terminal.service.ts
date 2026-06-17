@@ -100,7 +100,7 @@ export class TerminalService {
   public async writeCommandEcho(sessionId: string, command: string): Promise<void> {
     const session = this.requireSession(sessionId);
     const timestamp = new Date().toLocaleTimeString();
-    this.writeServiceData(session, `\r\n\x1b[90m[${timestamp}]\x1b[0m \x1b[36m$ ${command}\x1b[0m\r\n`);
+    this.writeServiceData(session, `\r\n[90m[${timestamp}][0m [36m$ ${command}[0m\r\n`);
   }
 
   public async resize(sessionId: string, cols: number, rows: number): Promise<void> {
