@@ -70,9 +70,9 @@ def detect_email(text: str) -> list[Detection]:
 
 def detect_phone(text: str) -> list[Detection]:
     detections: list[Detection] = []
-    for m in re.finditer(r"\+\d{1,3}[\s.-]?(?:\d[\s.-]?){7,13}\d(?!\d)", text):
+    for m in re.finditer(r"\+\d{1,3}[\s.-]?\d(?:[\s.-]?\d){7,13}(?!\d)", text):
         detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
-    for m in re.finditer(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*(?:\d[\s.-]?){6,12}\d(?!\d)", text, re.IGNORECASE):
+    for m in re.finditer(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*\d(?:[\s.-]?\d){6,12}(?!\d)", text, re.IGNORECASE):
         detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
     return detections
 
@@ -85,7 +85,7 @@ def detect_regex(text: str, entity_type: EntityType, pattern: str) -> list[Detec
 def detect_person_names(text: str) -> list[Detection]:
     pattern = re.compile(
         r"\b(?:soy|nombre\s+es|cliente\s*:\s*)\s+"
-        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)+)",
+        r"([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50}(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]{1,50})+)(?:\W|$)",
         re.IGNORECASE,
     )
     return [

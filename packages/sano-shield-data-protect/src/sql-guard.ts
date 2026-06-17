@@ -19,6 +19,9 @@ export function validateSelectSql(
   if (!trimmed) {
     throw new SqlRejectedError("SQL query is empty.");
   }
+  if (trimmed.length > 20_000) {
+    throw new SqlRejectedError("SQL query exceeds maximum length.");
+  }
   const withoutTrailingSemicolon = trimmed.endsWith(";") ? trimmed.slice(0, -1).trim() : trimmed;
   if (withoutTrailingSemicolon.includes(";")) {
     throw new SqlRejectedError("Multiple SQL statements are not allowed.");
@@ -31,7 +34,7 @@ export function validateSelectSql(
   }
 
   const match = withoutTrailingSemicolon.match(
-    /^select\s+([\w.*"`,()\s]+?)\s+from\s+([a-zA-Z_][\w."]*)((?:\s+(?:where|join|left|right|inner|cross|outer|group|having|order|limit|offset)[\s\S]*)?)$/iu,
+    /^select\s+([\w.*"`,()]+(?:\s+[\w.*"`,()]+)*)\s+from\s+([a-zA-Z_][\w."]*)((?:\s+(?:where|join|left|right|inner|cross|outer|group|having|order|limit|offset)[\s\S]*)?)$/iu,
   );
   if (!match?.[1] || !match[2]) {
     throw new SqlRejectedError("Only simple SELECT ... FROM queries are supported in this phase.");
@@ -55,14 +58,29 @@ export function validateSelectSql(
   return { normalizedSql, table, projectedColumns, limit };
 }
 
+function extractAlias(column: string): string | null {
+  const trimmed = column.trimEnd();
+  const asIdx = trimmed.toLowerCase().lastIndexOf(" as ");
+  if (asIdx < 0) return null;
+  const alias = trimmed.slice(asIdx + 4).trim();
+  if (!alias || alias.length > 128) return null;
+  for (let i = 0; i < alias.length; i++) {
+    const ch = alias.charCodeAt(i);
+    if (!((ch >= 97 && ch <= 122) || (ch >= 65 && ch <= 90) || ch === 95 || ch === 34 || (ch >= 48 && ch <= 57))) {
+      return null;
+    }
+  }
+  return alias;
+}
+
 function parseProjectedColumns(segment: string) {
   return segment
     .split(",")
     .map((column) => column.trim())
     .map((column) => {
-      const aliasMatch = column.match(/\s+as\s+([a-zA-Z_][\w"]*)$/iu);
-      if (aliasMatch?.[1]) {
-        return aliasMatch[1].replaceAll('"', "").toLowerCase();
+      const alias = extractAlias(column);
+      if (alias) {
+        return alias.replaceAll('"', "").toLowerCase();
       }
       const parts = column.split(".");
       return (parts.at(-1) ?? column).replaceAll('"', "").toLowerCase();

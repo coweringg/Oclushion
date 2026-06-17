@@ -1,5 +1,5 @@
-import { readFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readFileSync, existsSync, realpathSync } from "node:fs";
+import { join, resolve, sep, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHmac } from "node:crypto";
 import type { FastifyInstance } from "fastify";
@@ -14,6 +14,15 @@ const CACHE_MAX_AGE = 3600;
 function isValidSkillId(id: string): boolean {
   if (!id || id.length > 256) return false;
   return /^[a-zA-Z0-9_.-]+$/.test(id) && !id.includes("..");
+}
+
+function resolveSkillPath(id: string): string {
+  const rootDir = realpathSync(SKILLS_DIR);
+  const filePath = resolve(rootDir, `${id}.md`);
+  if (!filePath.startsWith(rootDir + sep)) {
+    throw new Error("Path traversal detected");
+  }
+  return filePath;
 }
 
 type SkillEntry = {
@@ -118,6 +127,12 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
         properties: { id: { type: "string", description: "Skill ID" } },
       },
     }),
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: "1 minute",
+      },
+    },
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
     if (!isValidSkillId(id)) {
@@ -129,7 +144,12 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: "Skill not found" });
     }
 
-    const skillPath = join(SKILLS_DIR, `${id}.md`);
+    let skillPath: string;
+    try {
+      skillPath = resolveSkillPath(id);
+    } catch {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     if (!existsSync(skillPath)) {
       return reply.status(404).send({ error: "Skill content not found" });
     }
@@ -150,6 +170,12 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
         properties: { id: { type: "string", description: "Skill ID" } },
       },
     }),
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: "1 minute",
+      },
+    },
   }, async (request, reply) => {
     const { id } = request.params as { id: string };
     if (!isValidSkillId(id)) {
@@ -161,7 +187,12 @@ export async function marketplaceRoutes(fastify: FastifyInstance) {
       return reply.status(404).send({ error: "Skill not found" });
     }
 
-    const skillPath = join(SKILLS_DIR, `${id}.md`);
+    let skillPath: string;
+    try {
+      skillPath = resolveSkillPath(id);
+    } catch {
+      return reply.status(400).send({ error: "Invalid skill ID" });
+    }
     if (!existsSync(skillPath)) {
       return reply.status(404).send({ error: "Skill content not found" });
     }

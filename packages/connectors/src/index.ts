@@ -1,6 +1,7 @@
 import {
   createCipheriv,
   createDecipheriv,
+  createHash,
   createHmac,
   randomBytes,
   timingSafeEqual,
@@ -187,7 +188,7 @@ export async function createOAuthStart(input: {
 }
 
 export function hashState(state: string): string {
-  return createHmac("sha256", process.env.API_KEY_HASH_PEPPER ?? API_KEY_PEPPER).update(state).digest("hex");
+  return createHash("sha256").update(state).digest("hex");
 }
 
 export function safeCompareStateHash(state: string, expectedHash: string): boolean {
@@ -249,7 +250,7 @@ export function sanitizeConnectorResource(resource: ResourcePayload): {
   const counts: Record<string, number> = {};
   const seen: Record<string, number> = {};
   const emailReplaced = resource.content.replace(
-    /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi,
+    /([A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,255}\.[A-Za-z]{2,})/g,
     () => {
       const type = "email";
       const index = seen[type] ?? 0;

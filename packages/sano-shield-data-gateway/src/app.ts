@@ -45,16 +45,23 @@ export function createApp(input: {
   const encryptionKey = resolveEncryptionKey(input.environment.DATA_PROTECT_ENCRYPTION_KEY);
 
   app.register(helmet, { global: true });
-  if (input.environment.DATA_GATEWAY_ENABLE_RATE_LIMITING) {
+  const enableRateLimiting = input.environment.DATA_GATEWAY_ENABLE_RATE_LIMITING ?? true;
+  if (enableRateLimiting) {
     app.register(rateLimit, {
       global: true,
-      max: input.environment.DATA_GATEWAY_RATE_LIMIT_MAX,
+      max: input.environment.DATA_GATEWAY_RATE_LIMIT_MAX ?? 120,
       timeWindow: "1 minute",
     });
   }
 
-  app.get("/health/live", async () => ({ status: "ok", service: "sano-data-gateway" }));
-  app.get("/health/ready", async (_request, reply) => {
+  const healthRateLimitMax = Number(process.env.DATA_GATEWAY_HEALTH_RATE_LIMIT_MAX) || 60;
+
+  app.get("/health/live", {
+    config: enableRateLimiting ? { rateLimit: { max: healthRateLimitMax, timeWindow: "1 minute" } } : undefined,
+  }, async () => ({ status: "ok", service: "sano-data-gateway" }));
+  app.get("/health/ready", {
+    config: enableRateLimiting ? { rateLimit: { max: healthRateLimitMax / 2, timeWindow: "1 minute" } } : undefined,
+  }, async (_request, reply) => {
     try {
       await Promise.all([input.sourcePool.query("SELECT 1"), input.controlPool.query("SELECT 1")]);
       return { status: "ok", service: "sano-data-gateway" };

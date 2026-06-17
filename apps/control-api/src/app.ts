@@ -121,7 +121,6 @@ export async function createApp(
   const keySet = options.adminToken.includes(":")
     ? KeySet.fromSerialized(options.adminToken)
     : KeySet.fromSecret(options.adminToken);
-  await rbacPlugin(app, { sessionSecret: options.adminToken, repository, keySet });
   if (options.enableRateLimiting ?? true) {
     app.register(rateLimit, {
       global: true,
@@ -129,6 +128,7 @@ export async function createApp(
       timeWindow: "1 minute",
     });
   }
+  await rbacPlugin(app, { sessionSecret: options.adminToken, repository, keySet });
   app.register(healthRoutes, { repository });
   const mfaTracker = createMfaSetupTracker();
   app.register(desktopRoutes, { repository, sessionSecret: options.adminToken, keySet, mfaTracker });

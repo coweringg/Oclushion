@@ -2,15 +2,27 @@ use std::env;
 use hive_memory::sync::encryption::Crypto;
 
 fn test_pass() -> String {
-    env::var("TEST_CRYPTO_PASSWORD").unwrap_or_else(|_| "test-crypto-pwd-2026".into())
+    if let Ok(pwd) = env::var("TEST_CRYPTO_PASSWORD") {
+        return pwd;
+    }
+    let value: u128 = rand::random();
+    format!("test-pwd-{value:x}")
 }
 
 fn alt_pass() -> String {
-    env::var("TEST_CRYPTO_ALT_PASSWORD").unwrap_or_else(|_| "alt-crypto-pwd-2026".into())
+    if let Ok(pwd) = env::var("TEST_CRYPTO_ALT_PASSWORD") {
+        return pwd;
+    }
+    let value: u128 = rand::random();
+    format!("alt-pwd-{value:x}")
 }
 
 fn wrong_pass() -> String {
-    env::var("TEST_CRYPTO_WRONG_PASSWORD").unwrap_or_else(|_| "wrong-crypto-pwd-2026".into())
+    if let Ok(pwd) = env::var("TEST_CRYPTO_WRONG_PASSWORD") {
+        return pwd;
+    }
+    let value: u128 = rand::random();
+    format!("wrong-pwd-{value:x}")
 }
 
 #[test]

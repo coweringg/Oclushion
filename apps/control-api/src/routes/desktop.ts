@@ -241,7 +241,7 @@ const desktopRoutes: FastifyPluginAsync<{
     };
   });
 
-  app.post("/v1/auth/mfa/verify", { preHandler: [requireAuth], schema: s(["Auth"], "Verify TOTP code and enable MFA", "mfaVerify") }, async (request, reply) => {
+  app.post("/v1/auth/mfa/verify", { preHandler: [requireAuth], schema: s(["Auth"], "Verify TOTP code and enable MFA", "mfaVerify"), config: { rateLimit: { max: 5, timeWindow: "1 minute" } } }, async (request, reply) => {
     const body = z.object({ code: z.string().length(6), secret: z.string().min(16) }).parse(request.body);
     const session = (request as unknown as Record<string, unknown>).session as { sub: string; email: string };
     if (!verifyTotpToken(body.code, body.secret)) {

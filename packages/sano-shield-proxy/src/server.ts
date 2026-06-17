@@ -1,7 +1,9 @@
 import { createApp } from "./app.js";
 import { readEnvironment } from "./config/environment.js";
+import { validateAuthConfig } from "./auth/auth-config.js";
 import { createRuntimeServices } from "./runtime-services.js";
 
+validateAuthConfig();
 const environment = readEnvironment();
 const runtime = await createRuntimeServices(environment);
 const ipDenyList = environment.PROXY_IP_DENYLIST

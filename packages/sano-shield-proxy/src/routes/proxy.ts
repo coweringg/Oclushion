@@ -66,7 +66,7 @@ const proxyRoutes: FastifyPluginAsync<ProxyRouteServices> = async (app, services
         return reply.code(401).send({ error: "Missing API key" });
       }
 
-      const principal = await services.clientApiKeyResolver.resolve(apiKey, "proxy:invoke");
+      const principal = await services.clientApiKeyResolver.resolve(apiKey, "proxy:invoke", requestId);
       if (!principal) {
         return reply.code(401).send({ error: "Invalid API key" });
       }
