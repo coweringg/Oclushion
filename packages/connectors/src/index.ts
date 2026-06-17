@@ -1,11 +1,10 @@
 import {
   createCipheriv,
   createDecipheriv,
-  createHash,
   createHmac,
+  pbkdf2Sync,
   randomBytes,
   timingSafeEqual,
-  subtle,
 } from "node:crypto";
 
 import { z } from "zod";
@@ -188,7 +187,7 @@ export async function createOAuthStart(input: {
 }
 
 export function hashState(state: string): string {
-  return createHash("sha256").update(state).digest("hex");
+  return pbkdf2Sync(state, "", 1, 32, "sha256").toString("hex");
 }
 
 export function safeCompareStateHash(state: string, expectedHash: string): boolean {

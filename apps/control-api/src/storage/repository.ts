@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { pbkdf2Sync, randomBytes, randomUUID } from "node:crypto";
 
 import type { Pool, PoolClient, QueryResultRow } from "pg";
 
@@ -914,7 +914,7 @@ export class PostgresControlRepository implements ControlRepository {
       const keyPrefix = apiKey.slice(0, 18);
       const salt = randomBytes(16).toString("hex");
       const pepper = process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
-      const hash = createHash("sha256").update(salt + apiKey + pepper).digest("hex");
+      const hash = pbkdf2Sync(apiKey, salt + pepper, 1, 32, "sha256").toString("hex");
       const keyHash = `v1:${salt}:${hash}`;
       const expiresAt = input.expiresAt ?? (() => {
         const d = new Date();
@@ -1013,7 +1013,7 @@ export class PostgresControlRepository implements ControlRepository {
       const newKeyPrefix = newApiKey.slice(0, 18);
       const salt = randomBytes(16).toString("hex");
       const pepper = process.env.API_KEY_HASH_PEPPER ?? "oclushion-hmac-v1";
-      const newHash = createHash("sha256").update(salt + newApiKey + pepper).digest("hex");
+      const newHash = pbkdf2Sync(newApiKey, salt + pepper, 1, 32, "sha256").toString("hex");
       const newKeyHash = `v1:${salt}:${newHash}`;
       const newExpiresAt = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
 

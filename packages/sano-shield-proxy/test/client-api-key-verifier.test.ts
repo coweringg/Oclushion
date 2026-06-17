@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import { pbkdf2Sync, randomBytes } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
@@ -8,12 +8,12 @@ const TEST_PEPPER = "oclushion-hmac-v1";
 
 function buildV1StoredHash(apiKey: string): string {
   const salt = randomBytes(16).toString("hex");
-  const hash = createHash("sha256").update(salt + apiKey + TEST_PEPPER).digest("hex");
+  const hash = pbkdf2Sync(apiKey, salt + TEST_PEPPER, 1, 32, "sha256").toString("hex");
   return `v1:${salt}:${hash}`;
 }
 
 function buildLegacyStoredHash(apiKey: string): string {
-  return createHmac("sha256", TEST_PEPPER).update(apiKey).digest("hex");
+  return pbkdf2Sync(apiKey, TEST_PEPPER, 1, 32, "sha256").toString("hex");
 }
 
 const TEST_KEY_ID = "e74c10c2-3b54-405e-a806-59979d16b526";

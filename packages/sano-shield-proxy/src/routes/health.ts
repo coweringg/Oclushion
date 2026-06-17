@@ -87,17 +87,23 @@ const healthRoutes: FastifyPluginAsync = async (app) => {
     return response;
   });
 
-  app.get("/authz/health", async () => {
+  app.get("/authz/health", {
+    config: { rateLimit: { max: 60, timeWindow: "1 minute" } },
+  }, async () => {
     return buildAuthzStatus();
   });
 
-  app.get("/authz/metrics", async (_request, reply) => {
+  app.get("/authz/metrics", {
+    config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+  }, async (_request, reply) => {
     return reply
       .header("Content-Type", "text/plain; charset=utf-8; version=0.0.4")
       .send(authMetrics.snapshot());
   });
 
-  app.get("/authz/self-check", async () => {
+  app.get("/authz/self-check", {
+    config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
+  }, async () => {
     return runFullSelfCheck();
   });
 };

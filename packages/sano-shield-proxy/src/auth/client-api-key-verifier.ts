@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { pbkdf2Sync, timingSafeEqual } from "node:crypto";
 import { performance } from "node:perf_hooks";
 
 import type { GatewayPrincipal } from "@oclushion/shared";
@@ -45,11 +45,11 @@ function recordAuthError(
 }
 
 function hashApiKeyV1(apiKey: string, salt: string, pepper: string): string {
-  return createHash("sha256").update(salt + apiKey + pepper).digest("hex");
+  return pbkdf2Sync(apiKey, salt + pepper, 1, 32, "sha256").toString("hex");
 }
 
 function hashApiKeyLegacy(apiKey: string, pepper: string): string {
-  return createHmac("sha256", pepper).update(apiKey).digest("hex");
+  return pbkdf2Sync(apiKey, pepper, 1, 32, "sha256").toString("hex");
 }
 
 function getKeyPrefix(apiKey: string): string {

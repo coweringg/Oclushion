@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes } from "node:crypto";
+import { pbkdf2Sync, randomBytes } from "node:crypto";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -15,12 +15,12 @@ const TEST_ORG_ID = "ae22b1a6-e1fd-43f5-a43d-a0a133db41df";
 
 function buildV1StoredHash(apiKey: string): string {
   const salt = randomBytes(16).toString("hex");
-  const hash = createHash("sha256").update(salt + apiKey + TEST_PEPPER).digest("hex");
+  const hash = pbkdf2Sync(apiKey, salt + TEST_PEPPER, 1, 32, "sha256").toString("hex");
   return `v1:${salt}:${hash}`;
 }
 
 function buildLegacyStoredHash(apiKey: string): string {
-  return createHmac("sha256", TEST_PEPPER).update(apiKey).digest("hex");
+  return pbkdf2Sync(apiKey, TEST_PEPPER, 1, 32, "sha256").toString("hex");
 }
 
 afterEach(() => {

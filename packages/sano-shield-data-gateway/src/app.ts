@@ -79,7 +79,9 @@ export function createApp(input: {
     }
   });
 
-  app.post("/v1/query", async (request, reply) => {
+  app.post("/v1/query", {
+    config: enableRateLimiting ? { rateLimit: { max: input.environment.DATA_GATEWAY_RATE_LIMIT_MAX ?? 120, timeWindow: "1 minute" } } : undefined,
+  }, async (request, reply) => {
     const startedAt = performance.now();
     const queryId = randomUUID();
     let organizationId = "00000000-0000-4000-8000-000000000000";

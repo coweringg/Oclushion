@@ -68,14 +68,21 @@ def detect_email(text: str) -> list[Detection]:
         for m in pattern.finditer(text)
     ]
 
+PHONE_PLUS_RE = re.compile(r"\+\d[\d\s.-]{6,20}(?!\d)(?![\d\s.-])")
+PHONE_WORD_RE = re.compile(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*[\d\s.-]{7,20}(?!\d)(?![\d\s.-])", re.IGNORECASE)
+
 def detect_phone(text: str) -> list[Detection]:
     if len(text) > 5000:
         return []
     detections: list[Detection] = []
-    for m in re.finditer(r"\+\d{1,3}[\s.-]?\d(?:[\s.-]?\d){7,13}(?!\d)", text):
-        detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
-    for m in re.finditer(r"(?:tel(?:éfono)?|phone)\s*[:.]?\s*\d(?:[\s.-]?\d){6,12}(?!\d)", text, re.IGNORECASE):
-        detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
+    for m in PHONE_PLUS_RE.finditer(text):
+        digits = sum(1 for c in m.group() if c.isdigit())
+        if 8 <= digits <= 16:
+            detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
+    for m in PHONE_WORD_RE.finditer(text):
+        digits = sum(1 for c in m.group() if c.isdigit())
+        if 7 <= digits <= 14:
+            detections.append(Detection(type="phone", start=m.start(), end=m.end(), confidence=1.0))
     return detections
 
 def detect_regex(text: str, entity_type: EntityType, pattern: str) -> list[Detection]:
@@ -99,15 +106,17 @@ def detect_person_names(text: str) -> list[Detection]:
         for match in pattern.finditer(text)
     ]
 
+CC_RE = re.compile(r"(?<!\d)\d[\d\s.-]{12,20}(?!\d)(?![\d\s.-])")
+
 def detect_payment_cards(text: str) -> list[Detection]:
     if len(text) > 5000:
         return []
-    candidates = re.finditer(r"(?<!\d)\d(?:[ -]?\d){12,18}(?!\d)", text)
-    return [
-        Detection(type="payment_card", start=match.start(), end=match.end(), confidence=1.0)
-        for match in candidates
-        if passes_luhn(match.group())
-    ]
+    detections: list[Detection] = []
+    for m in CC_RE.finditer(text):
+        digits = sum(1 for c in m.group() if c.isdigit())
+        if 13 <= digits <= 19 and passes_luhn(m.group()):
+            detections.append(Detection(type="payment_card", start=m.start(), end=m.end(), confidence=1.0))
+    return detections
 
 def passes_luhn(candidate: str) -> bool:
     digits = [int(character) for character in candidate if character.isdigit()]
