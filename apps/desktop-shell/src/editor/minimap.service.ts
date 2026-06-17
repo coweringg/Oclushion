@@ -64,4 +64,12 @@ export class MinimapService {
 
   private getLineColor(line: string): string {
     const trimmed = line.trim();
-    if (trimmed.startsWith("//") || trimmed.startsWith("
+    if (trimmed.startsWith("//") || trimmed.startsWith("/*")) {
+      return "rgba(139,155,181,0.3)";
+    }
+    if (trimmed.length === 0) {
+      return "transparent";
+    }
+    return "rgba(139,155,181,0.6)";
+  }
+}
