@@ -33,4 +33,6 @@ keyring = "3.2.2"
 reqwest = { version = "0.13.3", features = ["json", "stream"] }
 futures-util = "0.3.32"
 serde_json = "1.0.150"
+# Dependabot alert: glib <0.20.0 transitively pulled via gtk 0.18.x (UNMAINTAINED)
+# through muda → tauri. Linux-only. Fix requires Tauri GTK4 migration (PR #14684).
 glib = "0.20"

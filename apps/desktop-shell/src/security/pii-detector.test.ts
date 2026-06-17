@@ -33,7 +33,7 @@ describe("PiiDetector", () => {
   });
 
   it("detects Stripe keys", () => {
-    const result = detector.detectAll("sk_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+    const result = detector.detectAll("sk_test_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     expect(result.some((d) => d.type === "stripe_key")).toBe(true);
   });
 
