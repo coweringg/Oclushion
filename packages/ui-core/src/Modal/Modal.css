@@ -1,0 +1,96 @@
+.ocl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: ocl-modal-fade-in 150ms ease both;
+}
+
+.ocl-modal {
+  display: flex;
+  flex-direction: column;
+  background: var(--ocl-bg-panel, #0c1320);
+  border: 1px solid var(--ocl-border, #2a2f40);
+  border-radius: var(--ocl-radius-lg, 12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-height: 85vh;
+  overflow: hidden;
+  animation: ocl-modal-slide-in 200ms ease both;
+}
+
+.ocl-modal--sm { width: 360px; }
+.ocl-modal--md { width: 500px; }
+.ocl-modal--lg { width: 720px; }
+.ocl-modal--full {
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
+  max-height: calc(100vh - 40px);
+}
+
+.ocl-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ocl-border, #2a2f40);
+}
+
+.ocl-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ocl-text-primary, #edf3ff);
+}
+
+.ocl-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--ocl-radius-sm, 4px);
+  background: transparent;
+  color: var(--ocl-text-muted, #6b7280);
+  cursor: pointer;
+  font-size: 18px;
+  transition: background var(--ocl-transition, 200ms),
+              color var(--ocl-transition, 200ms);
+}
+
+.ocl-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ocl-text-primary, #edf3ff);
+}
+
+.ocl-modal-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  color: var(--ocl-text-secondary, #9ca3af);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ocl-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ocl-border, #2a2f40);
+}
+
+@keyframes ocl-modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ocl-modal-slide-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

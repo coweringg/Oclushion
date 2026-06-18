@@ -1,0 +1,22 @@
+.ocl-spinner {
+  display: inline-block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--ocl-border, #2a2f40);
+  border-top-color: var(--ocl-purple, #7b4dff);
+  animation: ocl-spinner-rotate 0.7s linear infinite;
+  box-sizing: border-box;
+}
+
+.ocl-spinner--sm { width: 14px; height: 14px; border-width: 2px; }
+.ocl-spinner--md { width: 24px; height: 24px; border-width: 3px; }
+.ocl-spinner--lg { width: 36px; height: 36px; border-width: 3px; }
+
+.ocl-spinner--primary { border-top-color: var(--ocl-purple, #7b4dff); }
+.ocl-spinner--success { border-top-color: var(--ocl-green, #45e5a2); }
+.ocl-spinner--danger { border-top-color: var(--ocl-red, #ff4d6a); }
+.ocl-spinner--muted { border-top-color: var(--ocl-text-muted, #6b7280); }
+
+@keyframes ocl-spinner-rotate {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,39 @@
+.ocl-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--ocl-border, #2a2f40);
+}
+
+.ocl-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--ocl-text-muted, #6b7280);
+  font-family: var(--ocl-ui-font, "Inter", sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--ocl-transition, 200ms),
+              border-color var(--ocl-transition, 200ms);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ocl-tab:hover {
+  color: var(--ocl-text-secondary, #9ca3af);
+}
+
+.ocl-tab--active {
+  color: var(--ocl-text-primary, #edf3ff);
+  border-bottom-color: var(--ocl-purple, #7b4dff);
+}
+
+.ocl-tab:focus-visible {
+  outline: 2px solid var(--ocl-purple, #7b4dff);
+  outline-offset: -2px;
+  border-radius: var(--ocl-radius-sm, 4px);
+}

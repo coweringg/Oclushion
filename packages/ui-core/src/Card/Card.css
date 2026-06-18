@@ -1,0 +1,44 @@
+.ocl-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--ocl-bg-surface, #111827);
+  border: 1px solid var(--ocl-border, #2a2f40);
+  border-radius: var(--ocl-radius-md, 8px);
+  overflow: hidden;
+  transition: border-color var(--ocl-transition, 200ms),
+              box-shadow var(--ocl-transition, 200ms);
+}
+
+.ocl-card--hoverable:hover {
+  border-color: var(--ocl-border-hover, #3f4459);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ocl-card--padding-none { padding: 0; }
+.ocl-card--padding-sm { padding: 12px; }
+.ocl-card--padding-md { padding: 16px; }
+.ocl-card--padding-lg { padding: 24px; }
+
+.ocl-card-header {
+  padding: 16px 16px 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ocl-text-primary, #edf3ff);
+}
+
+.ocl-card-body {
+  flex: 1;
+  color: var(--ocl-text-secondary, #9ca3af);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ocl-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ocl-border, #2a2f40);
+  font-size: 12px;
+  color: var(--ocl-text-muted, #6b7280);
+}
