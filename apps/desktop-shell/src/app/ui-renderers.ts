@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../ui/empty-state";
 import type { FileTreeNode, RepoScanResult, FileScanType } from "../repo-scanner";
 import type { PackedRepositoryContext } from "../context.service";
 import type { SafeDiffProposal } from "../safe-diff.service";
@@ -1053,12 +1054,13 @@ export function renderEnterpriseManageOverlay(
 }
 
 export function renderAuditEmptyState(): string {
-  return `
-    <div class="audit-empty-state">
-      <strong>${t("audit.emptyTitle")}</strong>
-      <p>${t("audit.emptyCopy")}</p>
-    </div>
-  `;
+  return renderEmptyState({
+    icon: "📝",
+    title: t("audit.emptyTitle"),
+    description: t("audit.emptyCopy"),
+    compact: true,
+    iconVariant: "muted",
+  });
 }
 
 export function renderFastApplyPanel(fastApplySessions: FastApplySession[]): string {
@@ -1162,19 +1164,28 @@ export function renderKanbanView(kanbanTasks: KanbanTask[]): string {
         </div>
         <button id="new-kanban-task-button" type="button">${t("kanban.newTask")}</button>
       </header>
-      <div class="kanban-columns">
-        ${kanbanColumns
-          .map(
-            (column) => `<section class="kanban-column" data-kanban-column="${column.id}">
-              <h3>${getKanbanColumnTitle(column)}</h3>
-              ${kanbanTasks
-                .filter((task) => task.column === column.id)
-                .map(renderKanbanTask)
-                .join("")}
-            </section>`,
-          )
-          .join("")}
-      </div>
+      ${kanbanTasks.length === 0 ? renderEmptyState({
+        icon: "📋",
+        title: "No tasks yet",
+        description: "Create your first task to start tracking work on your Kanban board.",
+        iconVariant: "warning",
+        panel: true,
+        action: { label: "Create first task", id: "kanban-new-task-button-empty", variant: "primary" },
+      }) : `
+        <div class="kanban-columns">
+          ${kanbanColumns
+            .map(
+              (column) => `<section class="kanban-column" data-kanban-column="${column.id}">
+                <h3>${getKanbanColumnTitle(column)}</h3>
+                ${kanbanTasks
+                  .filter((task) => task.column === column.id)
+                  .map(renderKanbanTask)
+                  .join("")}
+              </section>`,
+            )
+            .join("")}
+        </div>
+      `}
     </section>
   `;
 }

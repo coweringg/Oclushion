@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../empty-state";
 import type { MarketplaceItem } from "../../marketplace/marketplace.types";
 
 export type MarketplaceState = {
@@ -358,11 +359,24 @@ export class MarketplaceRenderer {
             }).join("")}
           </div>
           
-          ${displayItems.length === 0 ? `
-            <div style="text-align: center; color: #64748b; margin-top: 60px;">
-              No skills found for this criteria.
-            </div>
-          ` : ''}
+          ${displayItems.length === 0 ? (() => {
+            const isSearch = !!state.searchQuery;
+            const icon = isSearch ? "🔍" : state.activeTab === "installed" ? "⬇️" : "📦";
+            const title = isSearch ? "No results found" : state.activeTab === "installed" ? "No installed skills" : "No skills available";
+            const description = isSearch
+              ? `No skills match "${state.searchQuery}". Try a different search term.`
+              : state.activeTab === "installed"
+                ? "Install skills from the Community tab to see them here."
+                : "Check back later or try a different category.";
+            return renderEmptyState({
+              icon,
+              title,
+              description,
+              panel: true,
+              iconVariant: isSearch ? "muted" : "default",
+              ...(isSearch ? { action: { label: "Clear search", id: "clear-search", variant: "secondary" } } : {}),
+            });
+          })() : ""}
         </div>
       </div>
     `;

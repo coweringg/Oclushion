@@ -1,3 +1,5 @@
+import { renderEmptyState } from "../empty-state";
+
 export type CommandItem = {
   id: string;
   icon: string;
@@ -38,7 +40,17 @@ export class CommandPaletteRenderer {
     `;
   }
 
-  public renderItems(items: CommandItem[]): string {
+  public renderItems(items: CommandItem[], query = ""): string {
+    if (!items.length) {
+      const description = query ? `No commands match "${query}". Try a different search term.` : undefined;
+      return renderEmptyState({
+        icon: "🔍",
+        title: "No results found",
+        description,
+        compact: true,
+        iconVariant: "muted",
+      });
+    }
     return items.map(item => `
       <div class="ocl-command-item" data-command-id="${item.id}">
         <span>${item.icon}</span>

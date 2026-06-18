@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../empty-state";
 import type { SafeDiffProposal } from "../../safe-diff.service";
 
 export type SafeDiffEditorState = {
@@ -8,7 +9,13 @@ export type SafeDiffEditorState = {
 export class SafeDiffRenderer {
   public render(container: HTMLElement, state: SafeDiffEditorState): void {
     if (!state.proposal) {
-      container.innerHTML = "";
+      container.innerHTML = renderEmptyState({
+        icon: "📋",
+        title: "No changes to review",
+        description: "Safe Diff will show changes here when you run a command or apply a diff proposal.",
+        panel: true,
+        iconVariant: "muted",
+      });
       return;
     }
 

@@ -1,3 +1,4 @@
+import { renderEmptyState } from "../empty-state";
 import type { ChatMessage } from "../../chat/chat-session.types";
 
 export type MentionedFile = {
@@ -383,10 +384,18 @@ export class ChatRenderer {
       return `<div class="ocl-msg ocl-msg-assistant">${finalHtml}</div>`;
     }).join("");
 
+    const messageCount = state.messages.filter(m => m.role !== "system").length;
+
     container.innerHTML = `
       <div class="ocl-chat-panel">
         <div class="ocl-chat-messages" id="ocl-chat-messages-scroll">
-          ${messagesHtml}
+          ${messageCount === 0 ? renderEmptyState({
+            icon: "💬",
+            title: "Start a conversation with AI",
+            description: "Ask a question, request code review, or discuss your project.",
+            compact: true,
+            iconVariant: "default",
+          }) : messagesHtml}
         </div>
         ${thinkingHtml}
         <div class="ocl-chat-input-area">

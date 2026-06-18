@@ -182,3 +182,141 @@
 .terminal-mount .xterm {
   height: 100%;
 }
+
+.terminal-split-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 34px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(148, 121, 255, 0.16);
+  background: rgba(5, 10, 18, 0.4);
+}
+
+.terminal-split-toolbar {
+  display: flex;
+  gap: 4px;
+}
+
+.terminal-split-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  border: 1px solid rgba(148, 121, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #8f9bb1;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.terminal-split-toolbar button:hover {
+  border-color: rgba(157, 107, 255, 0.6);
+  color: #ffffff;
+  background: rgba(123, 77, 255, 0.12);
+}
+
+.terminal-split-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.terminal-split-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.terminal-split-pane.split {
+  overflow: visible;
+}
+
+.terminal-split-pane:not(:last-child) {
+  border-right: 1px solid rgba(148, 121, 255, 0.1);
+}
+
+.terminal-split-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  padding: 2px 8px;
+  border-bottom: 1px solid rgba(148, 121, 255, 0.1);
+  background: rgba(5, 10, 18, 0.3);
+}
+
+.terminal-split-title {
+  color: #8f9bb1;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-split-pane-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.terminal-split-pane:hover .terminal-split-pane-actions {
+  opacity: 1;
+}
+
+.terminal-split-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 20px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #6b7a93;
+  font-size: 10px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.terminal-split-btn:hover {
+  color: #d8deea;
+  background: rgba(123, 77, 255, 0.15);
+}
+
+.terminal-split-btn-close:hover {
+  color: #ff5b66;
+  background: rgba(255, 91, 102, 0.12);
+}
+
+.terminal-gutter {
+  flex-shrink: 0;
+  z-index: 2;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.terminal-gutter:hover,
+.terminal-gutter.terminal-drag-active {
+  background: rgba(157, 107, 255, 0.3);
+}
+
+.terminal-gutter--vertical {
+  width: 5px;
+  cursor: col-resize;
+}
+
+.terminal-gutter--horizontal {
+  height: 5px;
+  cursor: row-resize;
+}

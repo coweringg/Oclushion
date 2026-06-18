@@ -20,3 +20,16 @@ export type TerminalExitEvent = {
   sessionId: string;
   code: number | null;
 };
+
+export type SplitDirection = "horizontal" | "vertical";
+
+export type SplitPane =
+  | { kind: "leaf"; sessionId: string; size: number }
+  | { kind: "split"; direction: SplitDirection; children: SplitPane[]; size: number };
+
+export type SplitLayout = {
+  root: SplitPane;
+  sizes: Record<string, number>;
+};
+
+export const SPLIT_STORAGE_KEY = "oclushion:terminal:splits";

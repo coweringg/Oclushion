@@ -5,7 +5,8 @@ import { Terminal } from "xterm";
 
 import { BaseController, type ControllerContext } from "../ui/controller";
 import type { TerminalService } from "./terminal.service";
-import type { TerminalSession } from "./terminal.types";
+import type { TerminalSession, SplitDirection, SplitPane } from "./terminal.types";
+import { SplitManager } from "./split-manager";
 import "xterm/css/xterm.css";
 
 export type TerminalControllerOptions = {
@@ -19,10 +20,11 @@ type MountedTerminal = {
 
 export class TerminalController extends BaseController {
   private isOpen = false;
-  private activeUserSessionId: string | null = null;
   private readonly mounted = new Map<string, MountedTerminal>();
   private dataDispose: (() => void) | null = null;
   private exitDispose: (() => void) | null = null;
+  private splitManager: SplitManager | null = null;
+  private dragState: { sessionId: string; startX: number; startY: number; parentDir: SplitDirection } | null = null;
 
   public constructor(
     context: ControllerContext,
@@ -35,7 +37,8 @@ export class TerminalController extends BaseController {
   public async initialize(): Promise<void> {
     await this.terminalService.getOrCreateAgentTerminal(this.options.cwdProvider());
     const userSession = await this.terminalService.spawnUserTerminal(this.options.cwdProvider());
-    this.activeUserSessionId = userSession.id;
+    const sessionIds = this.terminalService.getUserSessions().map((s) => s.id);
+    this.splitManager = new SplitManager(sessionIds.length ? sessionIds : [userSession.id]);
     this.render();
   }
 
@@ -55,33 +58,36 @@ export class TerminalController extends BaseController {
     this.listen("#terminal-new-user-button", "click", () => {
       void this.createUserTerminal();
     });
-    this.listen("button[data-terminal-user-tab]", "click", (_event, button) => {
-      const sessionId = button.dataset.terminalUserTab;
-      if (sessionId) {
-        this.activeUserSessionId = sessionId;
-        this.render();
-      }
+    this.listen("[data-terminal-split-h]", "click", () => {
+      void this.splitActive("horizontal");
     });
-    this.listen("[data-terminal-close-user]", "click", (event, button) => {
-      event.stopPropagation();
-      const sessionId = button.dataset.terminalCloseUser;
+    this.listen("[data-terminal-split-v]", "click", () => {
+      void this.splitActive("vertical");
+    });
+    this.listen("[data-terminal-close-split]", "click", (_event, button) => {
+      const sessionId = button.dataset.terminalCloseSplit;
       if (sessionId) {
-        void this.closeUserTerminal(sessionId);
+        void this.closeSplitPane(sessionId);
       }
     });
     this.listen("#terminal-agent-interrupt", "click", () => {
       void this.interruptAgent();
     });
 
+    this.context.root.addEventListener("mousemove", this.handleDragMove as EventListener);
+    this.context.root.addEventListener("mouseup", this.handleDragEnd as EventListener);
     this.context.root.addEventListener("keydown", this.handleKeydown as EventListener);
   }
 
   public override destroy(): void {
     this.context.root.removeEventListener("keydown", this.handleKeydown as EventListener);
+    this.context.root.removeEventListener("mousemove", this.handleDragMove as EventListener);
+    this.context.root.removeEventListener("mouseup", this.handleDragEnd as EventListener);
     this.dataDispose?.();
     this.exitDispose?.();
     this.mounted.forEach(({ terminal }) => terminal.dispose());
     this.mounted.clear();
+    this.splitManager?.persist();
     super.destroy();
   }
 
@@ -91,22 +97,33 @@ export class TerminalController extends BaseController {
 
   private async createUserTerminal(): Promise<void> {
     const session = await this.terminalService.spawnUserTerminal(this.options.cwdProvider());
-    this.activeUserSessionId = session.id;
+    if (this.splitManager) {
+      const sessionIds = this.splitManager.getSessionIds();
+      const target = sessionIds[sessionIds.length - 1] ?? session.id;
+      this.splitManager.splitPane(target, session.id, "horizontal");
+    }
     this.render();
   }
 
-  private async closeUserTerminal(sessionId: string): Promise<void> {
-    const sessions = this.terminalService.getUserSessions();
-    if (sessions.length <= 1) {
-      return;
+  private async splitActive(direction: SplitDirection): Promise<void> {
+    const session = await this.terminalService.spawnUserTerminal(this.options.cwdProvider());
+    if (this.splitManager) {
+      const sessionIds = this.splitManager.getSessionIds();
+      const activeEl = this.context.root.querySelector<HTMLElement>(".terminal-split-pane.active");
+      const activeSessionId = activeEl?.dataset.sessionId ?? sessionIds[sessionIds.length - 1] ?? session.id;
+      this.splitManager.splitPane(activeSessionId, session.id, direction);
     }
+    this.render();
+  }
+
+  private async closeSplitPane(sessionId: string): Promise<void> {
+    const sessions = this.terminalService.getUserSessions();
+    if (sessions.length <= 1) return;
     await this.terminalService.sendInterrupt(sessionId).catch(() => undefined);
     this.mounted.get(sessionId)?.terminal.dispose();
     this.mounted.delete(sessionId);
     this.terminalService.closeUserSession(sessionId);
-    if (this.activeUserSessionId === sessionId) {
-      this.activeUserSessionId = this.terminalService.getUserSessions()[0]?.id ?? null;
-    }
+    this.splitManager?.closePane(sessionId);
     this.render();
   }
 
@@ -124,6 +141,16 @@ export class TerminalController extends BaseController {
       this.render();
       return;
     }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === "\\") {
+      event.preventDefault();
+      this.focusNextPane();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === "5") {
+      event.preventDefault();
+      void this.splitActive("horizontal");
+      return;
+    }
     const agentPane = this.context.root.querySelector<HTMLElement>("#terminal-agent-pane");
     if (event.ctrlKey && event.key.toLowerCase() === "c" && agentPane?.contains(document.activeElement)) {
       event.preventDefault();
@@ -131,11 +158,57 @@ export class TerminalController extends BaseController {
     }
   };
 
+  private focusNextPane(): void {
+    const panes = this.context.root.querySelectorAll<HTMLElement>(".terminal-split-pane.active");
+    const paneArray = Array.from(panes);
+    if (!paneArray.length) return;
+    const currentIndex = paneArray.findIndex((p) => p.contains(document.activeElement));
+    const nextIndex = (currentIndex + 1) % paneArray.length;
+    const nextPane = paneArray[nextIndex];
+    if (nextPane) {
+      const mount = nextPane.querySelector<HTMLElement>(".terminal-mount");
+      if (mount) {
+        mount.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  private handleDragStart = (event: MouseEvent, sessionId: string, direction: SplitDirection): void => {
+    event.preventDefault();
+    this.dragState = {
+      sessionId,
+      startX: event.clientX,
+      startY: event.clientY,
+      parentDir: direction,
+    };
+    const handle = event.target as HTMLElement;
+    handle.classList.add("terminal-drag-active");
+  };
+
+  private handleDragMove = (event: MouseEvent): void => {
+    if (!this.dragState) return;
+    const delta = this.dragState.parentDir === "horizontal"
+      ? (event.clientX - this.dragState.startX) / (this.context.root.querySelector("#terminal-user-mount")?.clientWidth ?? 1)
+      : (event.clientY - this.dragState.startY) / (this.context.root.querySelector("#terminal-user-mount")?.clientHeight ?? 1);
+    if (Math.abs(delta) > 0.02) {
+      this.splitManager?.resizePane(this.dragState.sessionId, delta);
+      this.render();
+      this.dragState.startX = event.clientX;
+      this.dragState.startY = event.clientY;
+    }
+  };
+
+  private handleDragEnd = (_event: MouseEvent): void => {
+    if (this.dragState) {
+      const handle = this.context.root.querySelector(".terminal-drag-active");
+      handle?.classList.remove("terminal-drag-active");
+      this.dragState = null;
+    }
+  };
+
   private render(): void {
     const root = this.context.root.querySelector<HTMLElement>("#terminal-panel-root");
-    if (!root) {
-      return;
-    }
+    if (!root) return;
     root.innerHTML = this.isOpen ? this.renderOpenPanel() : "";
     root.classList.toggle("is-open", this.isOpen);
     this.context.root.querySelector("#terminal-toggle-button")?.classList.toggle("active", this.isOpen);
@@ -156,19 +229,23 @@ export class TerminalController extends BaseController {
   private renderOpenPanel(): string {
     const agentSession = this.terminalService.getAgentSession();
     const userSessions = this.terminalService.getUserSessions();
-    const activeUser = userSessions.find((session) => session.id === this.activeUserSessionId) ?? userSessions[0];
-    this.activeUserSessionId = activeUser?.id ?? null;
+    const splitContent = this.splitManager
+      ? this.renderSplitPane(this.splitManager.getLayout().root, userSessions)
+      : "";
 
     return `
       <section class="terminal-panel" aria-label="Integrated terminal">
         <section class="terminal-pane user">
-          <header class="terminal-user-tabs">
-            <div class="terminal-user-tab-list">
-              ${userSessions.map((session) => this.renderUserTab(session)).join("")}
+          <header class="terminal-split-header">
+            <div class="terminal-split-toolbar">
+              <button data-terminal-split-h type="button" title="Split horizontal">⬌</button>
+              <button data-terminal-split-v type="button" title="Split vertical">⬍</button>
+              <button id="terminal-new-user-button" type="button" title="New terminal">+</button>
             </div>
-            <button id="terminal-new-user-button" type="button" title="Nueva terminal de usuario">+</button>
           </header>
-          <div id="terminal-user-mount" class="terminal-mount" data-terminal-session="${activeUser?.id ?? ""}"></div>
+          <div id="terminal-user-mount" class="terminal-split-container">
+            ${splitContent}
+          </div>
         </section>
         <aside id="terminal-agent-pane" class="terminal-pane agent" tabindex="0">
           <header class="terminal-pane-header">
@@ -191,15 +268,35 @@ export class TerminalController extends BaseController {
     `;
   }
 
-  private renderUserTab(session: TerminalSession): string {
-    const active = session.id === this.activeUserSessionId ? "active" : "";
-    return `
-      <button class="terminal-user-tab ${active}" type="button" data-terminal-user-tab="${session.id}">
-        <span>${session.title}</span>
-        <i class="${session.isAlive ? "alive" : ""}"></i>
-        <b data-terminal-close-user="${session.id}" role="button" aria-label="Cerrar terminal">x</b>
-      </button>
-    `;
+  private renderSplitPane(pane: SplitPane, sessions: TerminalSession[]): string {
+    if (pane.kind === "leaf") {
+      const session = sessions.find((s) => s.id === pane.sessionId);
+      if (!session) return "";
+      return `
+        <div class="terminal-split-pane active" data-session-id="${session.id}" style="flex: ${pane.size};">
+          <div class="terminal-split-pane-header">
+            <span class="terminal-split-title">${session.title}</span>
+            <div class="terminal-split-pane-actions">
+              <button data-terminal-split-h data-split-from="${session.id}" type="button" title="Split horizontal" class="terminal-split-btn">⬌</button>
+              <button data-terminal-split-v data-split-from="${session.id}" type="button" title="Split vertical" class="terminal-split-btn">⬍</button>
+              <button data-terminal-close-split="${session.id}" type="button" title="Close" class="terminal-split-btn terminal-split-btn-close">x</button>
+            </div>
+          </div>
+          <div class="terminal-mount" data-terminal-session="${session.id}" tabindex="-1"></div>
+        </div>
+      `;
+    }
+    if (pane.kind === "split") {
+      const flexDirection = pane.direction === "horizontal" ? "row" : "column";
+      const children = pane.children.map((child, index) => {
+        const rendered = this.renderSplitPane(child, sessions);
+        const isLast = index === pane.children.length - 1;
+        const gutterDir = pane.direction === "horizontal" ? "vertical" : "horizontal";
+        return rendered + (isLast ? "" : `<div class="terminal-gutter terminal-gutter--${gutterDir}" data-gutter-dir="${pane.direction}"></div>`);
+      }).join("");
+      return `<div class="terminal-split-pane split" style="flex: ${pane.size}; display: flex; flex-direction: ${flexDirection}; min-height: 0; min-width: 0;">${children}</div>`;
+    }
+    return "";
   }
 
   private mountVisibleTerminals(): void {
@@ -207,24 +304,36 @@ export class TerminalController extends BaseController {
     mounts.forEach((mount) => {
       const sessionId = mount.dataset.terminalSession;
       const session = this.terminalService.getSessions().find((candidate) => candidate.id === sessionId);
-      if (!session || !sessionId) {
-        return;
-      }
+      if (!session || !sessionId) return;
       const mounted = this.ensureMounted(session);
+      const isFirstMount = !mounted.terminal.element;
       if (!mounted.terminal.element || !mount.contains(mounted.terminal.element)) {
         mount.replaceChildren();
         mounted.terminal.open(mount);
-        mounted.terminal.write(session.scrollback.join("\r\n"));
+        if (isFirstMount) {
+          mounted.terminal.write(session.scrollback.join("\r\n"));
+        }
       }
       mounted.fit.fit();
+    });
+
+    this.context.root.querySelectorAll<HTMLElement>(".terminal-gutter").forEach((gutter) => {
+      gutter.addEventListener("mousedown", (event: MouseEvent) => {
+        const dir = gutter.dataset.gutterDir;
+        if (!dir) return;
+        const sibling = gutter.previousElementSibling as HTMLElement | null;
+        if (!sibling) return;
+        const sessionId = sibling.dataset.sessionId;
+        if (sessionId) {
+          this.handleDragStart(event, sessionId, dir as SplitDirection);
+        }
+      });
     });
   }
 
   private ensureMounted(session: TerminalSession): MountedTerminal {
     const existing = this.mounted.get(session.id);
-    if (existing) {
-      return existing;
-    }
+    if (existing) return existing;
     const terminal = new Terminal({
       convertEol: true,
       cursorBlink: session.owner === "user",
