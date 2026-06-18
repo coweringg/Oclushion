@@ -1,0 +1,24 @@
+@keyframes ocl-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ocl-pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(69, 229, 162, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(69, 229, 162, 0.9); }
+}
+
+@keyframes ocl-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+@keyframes ocl-hero-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ocl-border-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(123, 77, 255, 0.3); }
+  50% { box-shadow: 0 0 0 1px rgba(123, 77, 255, 0.7), 0 0 20px rgba(123, 77, 255, 0.2); }
+}

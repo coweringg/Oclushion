@@ -3,11 +3,20 @@ import { logger } from "../utils/logger";
 import { initializeServices } from "./app-init";
 import { initializeAppLifecycle } from "./app-lifecycle";
 
+function hideSplash(): void {
+  const splash = document.getElementById("splash-screen");
+  if (splash) {
+    splash.classList.add("splash-hidden");
+    setTimeout(() => splash.remove(), 500);
+  }
+}
+
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function renderFatalError(title: string, message: string): void {
+  hideSplash();
   document.body.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0a;color:#e4e4e7;font-family:system-ui,-apple-system,sans-serif;padding:2rem;">
       <div style="max-width:480px;text-align:center;">
@@ -23,6 +32,7 @@ async function bootstrap(): Promise<void> {
   try {
     const services = await initializeServices();
     await initializeAppLifecycle(services);
+    hideSplash();
   } catch (error) {
     logger.error("Bootstrap", "Failed to initialize:", error);
     const message = error instanceof Error ? error.message : String(error);

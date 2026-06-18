@@ -1,0 +1,105 @@
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 70% 10%, rgba(74, 74, 181, 0.15), transparent 26%),
+    radial-gradient(circle at 15% 90%, rgba(53, 139, 255, 0.10), transparent 28%),
+    #070c15;
+  transition: opacity 400ms ease-out, visibility 400ms ease-out;
+}
+
+.splash-screen.splash-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: splash-fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.splash-logo {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from 34deg, #55d4ff 0 18%, #6c50ff 18% 55%, #b15fff 55% 90%, transparent 90%);
+  box-shadow: 0 0 30px rgba(139, 77, 255, 0.5);
+  animation: splash-logo-pulse 2s ease-in-out infinite;
+}
+
+.splash-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0c1320;
+}
+
+.splash-logo-icon::after {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 10px;
+  margin: 15px 0 0 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #9e5dff, #5d68ff);
+  transform: rotate(38deg);
+}
+
+.splash-title {
+  color: #edf3ff;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.splash-subtitle {
+  color: #7f8a9d;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.splash-loader {
+  width: 200px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 99px;
+  background: rgba(139, 155, 180, 0.15);
+  overflow: hidden;
+}
+
+.splash-loader-bar {
+  width: 40%;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #6c50ff, #b15fff);
+  animation: splash-loader-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes splash-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes splash-logo-pulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(139, 77, 255, 0.5); }
+  50% { box-shadow: 0 0 50px rgba(139, 77, 255, 0.7); }
+}
+
+@keyframes splash-loader-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
