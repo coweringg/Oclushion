@@ -15,12 +15,12 @@ name = "oclushion_desktop_shell_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = "2.6.2"
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
 log = "0.4.27"
-tauri = "2.11.2"
+tauri = { version = "2.11.2", features = [] }
 tauri-plugin-log = "2.3.0"
 tauri-plugin-dialog = "2.2.1"
 tauri-plugin-fs = "2.3.0"
@@ -35,4 +35,6 @@ futures-util = "0.3.32"
 serde_json = "1.0.150"
 # Dependabot alert: glib <0.20.0 transitively pulled via gtk 0.18.x (UNMAINTAINED)
 # through muda → tauri. Linux-only. Fix requires Tauri GTK4 migration (PR #14684).
+
+[target.'cfg(target_os = "linux")'.dependencies]
 glib = "0.20"

@@ -1,5 +1,4 @@
 import Database from "@tauri-apps/plugin-sql";
-import { secureKeysService } from "./llm/secure-keys.service";
 
 export type KeyValueStore = {
   getItem(key: string): Promise<string | null>;
@@ -27,9 +26,8 @@ export class SqliteKeyValueStore implements KeyValueStore {
   private constructor(private readonly database: Database) {}
 
   public static async open(path?: string): Promise<SqliteKeyValueStore> {
-    const encryptionKey = await getOrCreateEncryptionKey();
-    const resolvedPath = path ?? `sqlite:workspace-${Math.random().toString(36).slice(2, 10)}.db?_cipher_key=${encryptionKey}`;
-    const database = await Database.load(resolvedPath);
+    const dbPath = path ?? "sqlite:oclushion-store.db";
+    const database = await Database.load(dbPath);
     await database.execute(
       `CREATE TABLE IF NOT EXISTS oclushion_kv_store (
         key TEXT PRIMARY KEY,
@@ -68,15 +66,4 @@ export async function createPersistentStore(): Promise<KeyValueStore> {
     return new MemoryKeyValueStore();
   }
   return SqliteKeyValueStore.open();
-}
-
-async function getOrCreateEncryptionKey(): Promise<string> {
-  let key = await secureKeysService.loadKey("encryption", "sqlite");
-  if (!key) {
-    const array = new Uint8Array(32);
-    crypto.getRandomValues(array);
-    key = Array.from(array).map((b) => b.toString(16).padStart(2, "0")).join("");
-    await secureKeysService.saveKey("encryption", "sqlite", key);
-  }
-  return key;
 }

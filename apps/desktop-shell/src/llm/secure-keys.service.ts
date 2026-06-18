@@ -35,24 +35,77 @@ class MemorySecureKeyStore implements SecureKeyStore {
   }
 }
 
-class TauriKeychainStore implements SecureKeyStore {
-  public readonly isSecure = true;
+class LocalStorageKeyStore implements SecureKeyStore {
+  public readonly isSecure = false;
+  private static readonly STORAGE_KEY = "oclushion.secure-keys";
+
+  private loadEntries(): Record<string, unknown> {
+    try {
+      const raw = globalThis.localStorage?.getItem(LocalStorageKeyStore.STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private saveEntries(entries: Record<string, unknown>): void {
+    try {
+      globalThis.localStorage?.setItem(LocalStorageKeyStore.STORAGE_KEY, JSON.stringify(entries));
+    } catch {  }
+  }
 
   public async get<T>(key: string): Promise<T | undefined> {
-    const provider = stripKeyPrefix(key);
-    const value = await invoke<string | null>("load_api_key", { provider });
-    return value as T | undefined;
+    return this.loadEntries()[key] as T | undefined;
   }
 
   public async set(key: string, value: unknown): Promise<void> {
-    const provider = stripKeyPrefix(key);
-    await invoke("save_api_key", { provider, value: String(value ?? "") });
+    const entries = this.loadEntries();
+    entries[key] = value;
+    this.saveEntries(entries);
   }
 
   public async delete(key: string): Promise<boolean> {
-    const provider = stripKeyPrefix(key);
-    await invoke("delete_api_key", { provider });
-    return true;
+    const entries = this.loadEntries();
+    const existed = key in entries;
+    delete entries[key];
+    this.saveEntries(entries);
+    return existed;
+  }
+
+  public async save(): Promise<void> {
+    return undefined;
+  }
+}
+
+class TauriKeychainStore implements SecureKeyStore {
+  public readonly isSecure = true;
+  private readonly fallback = new LocalStorageKeyStore();
+
+  public async get<T>(key: string): Promise<T | undefined> {
+    if (key.startsWith("apikey.")) {
+      const provider = stripKeyPrefix(key);
+      const value = await invoke<string | null>("load_api_key", { provider });
+      return value as T | undefined;
+    }
+    return this.fallback.get<T>(key);
+  }
+
+  public async set(key: string, value: unknown): Promise<void> {
+    if (key.startsWith("apikey.")) {
+      const provider = stripKeyPrefix(key);
+      await invoke("save_api_key", { provider, value: String(value ?? "") });
+      return;
+    }
+    await this.fallback.set(key, value);
+  }
+
+  public async delete(key: string): Promise<boolean> {
+    if (key.startsWith("apikey.")) {
+      const provider = stripKeyPrefix(key);
+      await invoke("delete_api_key", { provider });
+      return true;
+    }
+    return this.fallback.delete(key);
   }
 
   public async save(): Promise<void> {
