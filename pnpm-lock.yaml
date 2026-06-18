@@ -190,6 +190,9 @@ importers:
       '@oclushion/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@oclushion/ui-core':
+        specifier: workspace:*
+        version: link:../../packages/ui-core
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.0

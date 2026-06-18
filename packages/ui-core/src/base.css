@@ -1,8 +1,3 @@
-/* Oclushion UI Core — CSS variable references
- * These components reference --ocl-* tokens defined in the consumer's stylesheet.
- * Fallback values provide reasonable defaults when tokens are absent.
- */
-
 :root {
   --ocl-ui-font: "Inter", "Segoe UI", Arial, sans-serif;
   --ocl-ui-mono: "JetBrains Mono", "Fira Code", monospace;
