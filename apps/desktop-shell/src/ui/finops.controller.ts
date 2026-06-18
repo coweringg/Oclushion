@@ -38,7 +38,7 @@ export class FinOpsController extends BaseController {
       const latestCompleted = [...snapshot.tasks].reverse().find(t => t.status === "completed");
       if (latestCompleted) {
         const alert = this.finOpsService.analyzeTask(latestCompleted.input, latestCompleted.targetPaths);
-        if (alert && !this.state.alerts.some(a => a.title === alert.title)) { // Avoid dupes of the same rule
+        if (alert && !this.state.alerts.some(a => a.title === alert.title)) {
           this.state.alerts.push(alert);
           this.render();
         }

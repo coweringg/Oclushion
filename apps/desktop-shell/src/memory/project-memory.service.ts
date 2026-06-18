@@ -151,13 +151,13 @@ export class ProjectMemoryService {
           try {
             const vec = new Float64Array(JSON.parse(row.embedding));
             const sim = semanticEmbedder.cosineSimilarity(queryEmbedding, vec);
-            score += sim * 0.7; // 70% weight to Semantic Similarity
+            score += sim * 0.7;
           } catch {}
         }
         
         const ftsMatch = ftsRows.find(f => f.id === row.id);
         if (ftsMatch) {
-          score += 0.3; // 30% weight to Exact Keyword Match
+          score += 0.3;
         }
 
         return { memory, score };

@@ -7,7 +7,7 @@ export type DiffHunk = {
   newStart: number;
   newLines: number;
   lines: DiffLine[];
-  accepted: boolean | null; // null = pending, true = accepted, false = rejected
+  accepted: boolean | null;
 };
 
 export class DiffInlineService {
@@ -105,7 +105,7 @@ export class DiffInlineService {
   }
 
   rejectHunk(original: string, _hunk: DiffHunk): string {
-    return original; // No changes applied
+    return original;
   }
 
   revertToOriginal(current: string, original: string): string {

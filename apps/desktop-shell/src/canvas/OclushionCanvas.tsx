@@ -49,7 +49,7 @@ export const OclushionCanvas = ({ canvasService }: { canvasService: CanvasServic
       setNodes(canvasService.getNodes());
       setEdges(canvasService.getEdges());
     };
-    sync(); // Carga inicial
+    sync();
     return canvasService.subscribe(sync);
   }, [canvasService, setNodes, setEdges]);
 
@@ -82,9 +82,9 @@ export const OclushionCanvas = ({ canvasService }: { canvasService: CanvasServic
         <Controls style={{ backgroundColor: '#27272a', border: '1px solid #3f3f46' }} />
         <MiniMap 
           nodeStrokeColor={(n) => {
-            if (n.type === 'file') return '#3b82f6'; // blue
-            if (n.type === 'chat') return '#8b5cf6'; // purple
-            if (n.type === 'sticky') return '#eab308'; // yellow
+            if (n.type === 'file') return '#3b82f6';
+            if (n.type === 'chat') return '#8b5cf6';
+            if (n.type === 'sticky') return '#eab308';
             return '#52525b';
           }} 
           nodeColor="#27272a" 

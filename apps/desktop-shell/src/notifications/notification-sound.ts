@@ -20,7 +20,7 @@ export function playSuccessSound(): void {
   const ctx = createAudioContext();
   if (!ctx) return;
 
-  const notes = [523, 659, 784]; // C5, E5, G5
+  const notes = [523, 659, 784];
   const noteDuration = 0.12;
   const totalDuration = 0.5;
 

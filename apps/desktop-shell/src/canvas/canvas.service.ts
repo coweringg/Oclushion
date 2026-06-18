@@ -94,7 +94,7 @@ export class CanvasService {
               source: node.id,
               target: targetNode.id,
               animated: true,
-              style: { stroke: "#a8a29e", strokeDasharray: "4" }, // dotted gray for imports
+              style: { stroke: "#a8a29e", strokeDasharray: "4" },
             });
             changed = true;
           }

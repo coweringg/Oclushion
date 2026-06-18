@@ -106,7 +106,7 @@ export class SelfImprovingService {
       this.hiveMemory.publish({
         sourceProject: this.currentProjectName,
         author: `@agent.${lesson.agentRole}`,
-        keywords: lesson.targetPaths.map(p => p.split("/").pop() || p), // simplistic keyword extraction
+        keywords: lesson.targetPaths.map(p => p.split("/").pop() || p),
         lesson: lesson.lesson,
       });
     }

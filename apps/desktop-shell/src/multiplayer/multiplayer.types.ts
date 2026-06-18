@@ -32,9 +32,9 @@ export type OrgPermissions = {
   canManageUsers: boolean;
   canManageRoles: boolean;
   canCreateRooms: boolean;
-  canExecuteTerminal: boolean; // Protects destructive commands
-  canLaunchAGI: boolean;       // Prevents juniors from running autonomous God Mode
-  canApproveReviews: boolean;  // Can approve internal code reviews
+  canExecuteTerminal: boolean;
+  canLaunchAGI: boolean;
+  canApproveReviews: boolean;
 };
 
 export type Organization = {
@@ -59,7 +59,7 @@ export type InviteLink = {
   orgId: string;
   createdBy: string;
   createdAt: string;
-  expiresAt: string | null; // null = never expires
+  expiresAt: string | null;
   maxUses: number | null;
   uses: number;
 };
@@ -117,14 +117,14 @@ export type AgentSyncMessage = {
 };
 
 export type AgentSyncMessageType =
-  | "intent_announce"      // "I'm about to modify auth.service.ts"
-  | "intent_complete"      // "I finished modifying auth.service.ts"
-  | "conflict_detected"    // "Two agents want to edit the same file"
-  | "conflict_resolved"    // "Conflict auto-resolved via merge"
-  | "knowledge_share"      // "I discovered this pattern in the codebase"
-  | "help_request"         // "I'm stuck, can another agent help?"
-  | "standup_broadcast"    // Daily standup summary
-  | "cross_room_awareness"; // Allows AIs to share API/Architecture changes across different isolated rooms
+  | "intent_announce"
+  | "intent_complete"
+  | "conflict_detected"
+  | "conflict_resolved"
+  | "knowledge_share"
+  | "help_request"
+  | "standup_broadcast"
+  | "cross_room_awareness";
 
 export type AgentSyncPayload = {
   targetFiles?: string[];
@@ -167,8 +167,8 @@ export type StandupMemberSummary = {
   tasksCompleted: string[];
   blockers: string[];
   
-  timeStuckOnTaskMinutes: number; // How long they've been fighting the same problem
+  timeStuckOnTaskMinutes: number;
   wellbeingStatus: WellbeingStatus;
-  healthScore: number; // 0-100 score evaluating flow state vs frustration
+  healthScore: number;
   aiCreditsUsed: number;
 };

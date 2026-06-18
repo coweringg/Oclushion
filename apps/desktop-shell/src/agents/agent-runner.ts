@@ -197,7 +197,7 @@ export class AgentRunner {
         role: "user",
         content: [
           "<agi_terminal_output>",
-          terminalOutput.slice(-20_000), // Keep last 20K chars to avoid token overflow
+          terminalOutput.slice(-20_000),
           "</agi_terminal_output>",
           "",
           `Iteration ${iteration}/${AGI_MAX_ITERATIONS}. Analyze the output above.`,

@@ -19,7 +19,7 @@ export class HiveMemoryService {
       author: "@santiago.backend",
       keywords: ["auth", "jwt", "token", "refresh", "401"],
       lesson: "When fixing the token refresh loop, ensure the interceptor clears the queue before retrying, otherwise simultaneous requests will trigger multiple refresh calls and invalidate the newly issued token.",
-      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
 
     this.insights.push({
@@ -28,7 +28,7 @@ export class HiveMemoryService {
       author: "@maria.ui",
       keywords: ["safari", "css", "flexbox", "gap", "bug"],
       lesson: "Safari has a bug where flex gap combined with percentage heights causes the container to collapse. Fix it by wrapping the flex items in a div with height: 100% instead of applying it to the flex container.",
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     });
   }
 

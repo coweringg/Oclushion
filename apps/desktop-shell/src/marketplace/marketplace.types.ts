@@ -40,10 +40,10 @@ export type MarketplaceItem = {
   author?: string;
   priceUsd?: number;
   rating?: number;
-  revenueShare?: number; // 0.90 means 90% for author
+  revenueShare?: number;
   
-  allowedTiers?: MarketplacePlanTier[]; // Strict matching array
-  organizationId?: string; // Private org registry
+  allowedTiers?: MarketplacePlanTier[];
+  organizationId?: string;
 };
 
 export type Skill = MarketplaceItem;

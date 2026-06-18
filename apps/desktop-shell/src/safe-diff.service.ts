@@ -58,7 +58,7 @@ export function parseAssistantResponseForProposals(response: string): ParsedAssi
       content,
       chunks: [{
         id: `chunk-${proposals.length + 1}-1`,
-        oldContent: "", // Simplification for parser. Real logic would diff original file.
+        oldContent: "",
         newContent: content,
         status: "pending"
       }],

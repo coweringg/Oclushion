@@ -102,9 +102,9 @@ export class MenubarController extends BaseController {
         const catId = categoryItem.dataset.category;
         if (catId) {
           if (this.state.activeCategoryId === catId) {
-            this.state.activeCategoryId = null; // Toggle off
+            this.state.activeCategoryId = null;
           } else {
-            this.state.activeCategoryId = catId; // Toggle on
+            this.state.activeCategoryId = catId;
           }
           this.render();
         }

@@ -93,7 +93,7 @@ export class AgentOrchestrator {
     });
 
     if (newInstruction) {
-      const newRole = "architect"; // Default to architect for the fork
+      const newRole = "architect";
       const newTaskId = `${plan.id}-fork-${Date.now()}`;
       plan.tasks.push({
         id: newTaskId,

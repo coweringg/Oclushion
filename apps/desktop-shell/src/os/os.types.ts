@@ -26,7 +26,7 @@ export type MockupElement = {
   label?: string;
   color?: string;
   borderRadius?: number;
-  children?: string[]; // IDs of child elements
+  children?: string[];
 };
 
 export type MockupBoard = {
@@ -35,7 +35,7 @@ export type MockupBoard = {
   elements: MockupElement[];
   createdAt: string;
   updatedAt: string;
-  linkedFiles?: string[]; // Source files this mockup relates to
+  linkedFiles?: string[];
 };
 
 export type ChatChannel = {
@@ -55,8 +55,8 @@ export type OSNotification = {
   message: string;
   timestamp: string;
   isRead: boolean;
-  actionLink?: string; // Deep link to PR, Review, or File
-  sourceUserId?: string; // Who triggered this (e.g. Junior)
+  actionLink?: string;
+  sourceUserId?: string;
 };
 
 export type NotificationSettings = {
@@ -99,7 +99,7 @@ export type AnalyticsMetric = {
   value: number;
   unit: string;
   trend: "up" | "down" | "stable";
-  sparkline: number[]; // Last 24 data points
+  sparkline: number[];
 };
 
 export type AnalyticsDashboard = {

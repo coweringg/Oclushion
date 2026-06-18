@@ -10,7 +10,7 @@ export type PurchaseReceipt = {
   itemId: string;
   purchasedAt: string;
   pricePaid: number;
-  signature: string; // Crypto signature to prevent tampering
+  signature: string;
 };
 
 export class PurchaseService {

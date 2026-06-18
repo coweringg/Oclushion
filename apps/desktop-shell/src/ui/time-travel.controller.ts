@@ -32,7 +32,7 @@ export class TimeTravelController extends BaseController {
     this.unsubscribe = this.orchestrator.subscribe((snapshot) => {
       this.state.tasks = snapshot.tasks;
       if (!this.state.tasks.find(t => t.id === this.state.selectedTaskId)) {
-        this.state.selectedTaskId = null; // Clear if plan changed
+        this.state.selectedTaskId = null;
       }
       this.render();
     });

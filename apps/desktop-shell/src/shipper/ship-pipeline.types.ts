@@ -53,7 +53,7 @@ export type ReviewFinding = {
 
 export type ReviewResult = {
   passed: boolean;
-  score: number; // 0-100
+  score: number;
   findings: ReviewFinding[];
   autoFixedCount: number;
   timestamp: string;
@@ -64,7 +64,7 @@ export type ShipPipelineState = {
   stage: ShipStage;
   idea: string;
   workspacePath: string;
-  progress: number; // 0-100
+  progress: number;
   startedAt: string;
   completedAt?: string;
   error?: string;

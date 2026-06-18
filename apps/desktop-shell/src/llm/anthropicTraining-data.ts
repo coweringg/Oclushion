@@ -26,7 +26,7 @@ export class AnthropicProvider implements ILLMProvider {
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
         "x-api-key": await requireProviderKey("anthropic"),
-        "X-Oclushion-Source": "desktop-shell", // Audit traceability
+        "X-Oclushion-Source": "desktop-shell",
       },
       body: JSON.stringify({
         model: request.model,

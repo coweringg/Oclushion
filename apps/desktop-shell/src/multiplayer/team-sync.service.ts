@@ -24,7 +24,7 @@ export class TeamSyncService {
   private reviews: InternalReviewRequest[] = [];
   private comments: ReviewComment[] = [];
   private messageLog: AgentSyncMessage[] = [];
-  private pendingIntents: Map<string, AgentSyncMessage> = new Map(); // agentId -> intent
+  private pendingIntents: Map<string, AgentSyncMessage> = new Map();
   private readonly listeners = new Set<TeamSyncListener>();
 
   public createSession(input: {
@@ -335,7 +335,7 @@ export class TeamSyncService {
     this.broadcastMessage("system", "Oclushion Review", "help_request", {
       description: `Please resolve this review comment: "${comment.content}" on line ${comment.lineNumber}`,
       targetFiles: [comment.filePath],
-      conflictId: comment.id, // Reusing conflictId to track the comment resolution
+      conflictId: comment.id,
     });
     
     this.emit();
