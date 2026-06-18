@@ -10,8 +10,8 @@ name = "secure_sandbox"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-wasmtime = "36"
-wasmtime-wasi = "36"
+wasmtime = "45"
+wasmtime-wasi = "45"
 sha2 = "0.10"
 uuid = { version = "1", features = ["v4", "serde"] }
 tokio = { version = "1", features = ["full"] }
