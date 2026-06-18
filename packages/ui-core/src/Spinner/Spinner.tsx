@@ -1,4 +1,4 @@
-import type { OclSize, OclVariant } from "../types";
+import type { OclSize } from "../types";
 import "./Spinner.css";
 
 export interface SpinnerProps {
