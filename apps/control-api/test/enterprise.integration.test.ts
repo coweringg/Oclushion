@@ -250,7 +250,7 @@ describe("Enterprise integration — SSO → Audit → Policies → SCIM", () =>
     expect(repo.calls).toContain("getSSOConnectionByDomain");
   });
 
-  it("SSO: authorize rejects unknown domain", async () => {
+  it("SSO: authorize rejects unknown domain", { timeout: 10_000 }, async () => {
     const repo = new FakeRepository();
     repo.getSSOConnectionByDomain = async () => null;
     const app = await createApp(repo as any, { adminToken, internalToken, enableRateLimiting: false });

@@ -1,3 +1,4 @@
+import { createServer } from "node:net";
 import { Pool } from "pg";
 
 import { createApp } from "./app.js";
@@ -5,6 +6,28 @@ import { readEnvironment } from "./config/environment.js";
 import { PostgresControlRepository } from "./storage/repository.js";
 
 const environment = readEnvironment();
+
+const portInUse = await isPortInUse(environment.CONTROL_API_HOST, environment.CONTROL_API_PORT);
+if (portInUse) {
+  console.log(
+    `[control-api] Port ${environment.CONTROL_API_PORT} on ${environment.CONTROL_API_HOST} ` +
+      `is already in use — skipping duplicate startup.`,
+  );
+  process.exit(0);
+}
+
+function isPortInUse(host: string, port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.once("error", (err: NodeJS.ErrnoException) => resolve(err.code === "EADDRINUSE"));
+    server.once("listening", () => {
+      server.close();
+      resolve(false);
+    });
+    server.listen(port, host);
+  });
+}
+
 const pool = new Pool({
   connectionString: environment.DATABASE_URL,
   connectionTimeoutMillis: 5000,
