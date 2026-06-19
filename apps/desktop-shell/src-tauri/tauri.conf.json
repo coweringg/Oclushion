@@ -23,7 +23,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self'; img-src 'self' asset: data:; script-src 'self'; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://api.oclushion.com https://cdn.oclushion.com https://api.vercel.com https://api.github.com https://api.linear.app https://api.notion.com"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: data:; script-src 'self'; connect-src 'self' http://localhost:11434 https://api.openai.com https://api.anthropic.com https://api.oclushion.com https://cdn.oclushion.com https://api.vercel.com https://api.github.com https://api.linear.app https://api.notion.com"
     }
   },
   "plugins": {

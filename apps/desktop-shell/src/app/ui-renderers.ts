@@ -91,13 +91,17 @@ export function renderBestSkillpackList(skillpacks?: Array<{ skillpack: { name: 
 
 export function renderSidebarSanoShield(): string {
   return `
-    <article class="sidebar-shield-card">
-      <div>
-        <strong>${t("privacy.title")}</strong>
-        <p>${t("privacy.description")} <span>${t("common.enabled")}</span></p>
-        <small>${t("privacy.details")}</small>
+    <article class="premium-shield-card">
+      <div class="shield-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
       </div>
-      <button type="button">></button>
+      <div>
+        <strong>SECURITY</strong>
+        <p>Sano Shield <span>Enabled</span></p>
+      </div>
+      <button class="icon-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"></path></svg>
+      </button>
     </article>
   `;
 }
@@ -1318,29 +1322,45 @@ export function renderAuthOverlay(
   return `
     <section class="desktop-auth-overlay ${isRegister ? "register-mode" : "login-mode"}" aria-modal="true" role="dialog" aria-label="${isRegister ? t("auth.registerAria") : t("auth.loginAria")}">
       <article class="desktop-auth-card">
-        <header>
+        <header class="desktop-auth-header">
+          <div class="auth-logo">O</div>
           <h2>${isRegister ? t("auth.registerTitle") : t("auth.loginTitle")}</h2>
           <p>${isRegister ? t("auth.registerDescription") : t("auth.loginDescription")}</p>
+          <div class="auth-divider"></div>
         </header>
         <form id="desktop-auth-form" data-auth-form="${authMode}">
           ${isRegister ? `
             <label class="desktop-auth-field">
               <span>${t("auth.name")}</span>
-              <input id="desktop-auth-name" name="name" type="text" autocomplete="name" placeholder="${t("auth.namePlaceholder")}" required />
+              <div class="auth-input-wrapper">
+                <input id="desktop-auth-name" name="name" type="text" autocomplete="name" placeholder="${t("auth.namePlaceholder")}" required />
+              </div>
             </label>
           ` : ""}
           <label class="desktop-auth-field">
             <span>${t("auth.email")}</span>
-            <input id="desktop-auth-email" name="email" type="email" autocomplete="email" placeholder="${t("auth.emailPlaceholder")}" required />
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </span>
+              <input id="desktop-auth-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required />
+            </div>
           </label>
           <label class="desktop-auth-field">
             <span>${t("auth.password")}</span>
-            <input id="desktop-auth-password" name="password" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" minlength="8" placeholder="${t("auth.passwordPlaceholder")}" required />
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </span>
+              <input id="desktop-auth-password" name="password" type="password" autocomplete="${isRegister ? "new-password" : "current-password"}" minlength="8" placeholder="••••••••••••" required />
+            </div>
           </label>
           ${isRegister ? `
             <label class="desktop-auth-field">
               <span>${t("auth.confirmPassword")}</span>
-              <input id="desktop-auth-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="${t("auth.confirmPasswordPlaceholder")}" required />
+              <div class="auth-input-wrapper">
+                <input id="desktop-auth-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="${t("auth.confirmPasswordPlaceholder")}" required />
+              </div>
             </label>
           ` : ""}
           ${isRegister ? "" : `
@@ -1349,9 +1369,7 @@ export function renderAuthOverlay(
               <button type="button">${t("auth.forgotPassword")}</button>
             </div>
           `}
-          ${ssoMode === "hidden" && !isRegister ? `
-            <button id="desktop-auth-sso-toggle" type="button" class="desktop-auth-sso-toggle">${t("auth.signInSSO")}</button>
-          ` : ""}
+          
           ${ssoMode === "domain" ? `
             <div class="desktop-auth-sso-domain">
               <label class="desktop-auth-field">
@@ -1378,6 +1396,15 @@ export function renderAuthOverlay(
             </button>
           ` : ""}
         </form>
+        
+        ${ssoMode === "hidden" && !isRegister ? `
+          <div class="auth-or-divider">or</div>
+          <button id="desktop-auth-sso-toggle" type="button" class="desktop-auth-sso-toggle">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+            ${t("auth.signInSSO")}
+          </button>
+        ` : ""}
+        
         ${isRegister ? `<p class="desktop-auth-note">${t("auth.freeForever")}</p>` : ""}
         <footer class="desktop-auth-switch">
           <span>${isRegister ? t("auth.hasAccount") : t("auth.noAccount")}</span>

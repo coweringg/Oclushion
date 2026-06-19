@@ -10,11 +10,9 @@ import {
   renderSettingsOverlay,
   renderUpgradeModal,
   renderSidebarSanoShield,
-  renderBestSkillpackList,
   renderRepoCard,
   renderCentralShell,
 } from "./ui-renderers";
-import { renderOnboardingProgress } from "../onboarding/onboarding-progress";
 import type { AgentTask } from "../agents/types";
 import type { AuditEvent } from "../audit.service";
 
@@ -35,19 +33,43 @@ export function renderMainLayout(ctx: EventHandlerContext): void {
       ${renderAppTitlebar(model.get("activeRepoScan"), ctx.sessionUsageService.getSnapshot(), model.get("currentSession"))}
 
       <aside class="global-sidebar" aria-label="${t("navigation.global")}">
-        <a class="brand-mark" href="#" aria-label="${t("navigation.home")}">
-          <span>${t("appShell.brandName")}</span>
+        <a class="brand-mark" href="#" aria-label="${t("appShell.brandName")}">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
         </a>
         <nav class="nav-stack">
-          <button data-tooltip="Home | Return to the main dashboard" title="${t("appShell.homeTitle")}" data-short="${t("common.home")}" type="button"><span>${t("common.home")}</span></button>
-          <button class="active" data-tooltip="Workspace | Your active project and editor" title="${t("appShell.workspaceTitle")}" data-short="${t("common.wrk")}" type="button"><span>${t("common.workspace")}</span></button>
-          <button data-tooltip="Repository | Browse and manage your files" title="${t("appShell.repoTitle")}" data-short="${t("common.repo")}" type="button"><span>${t("common.repo")}</span></button>
-          <button id="kanban-nav-button" data-tooltip="Tasks | Kanban board for task management" title="${t("appShell.kanbanTitle")}" data-short="${t("common.tasks")}" type="button"><span>${t("common.tasks")}</span></button>
-          <button id="audit-nav-button" data-tooltip="Activity | Audit log of all actions" title="${t("appShell.activityTitle")}" data-short="${t("common.act")}" type="button"><span>${t("common.activity")}</span></button>
-          <button data-tooltip="Models | Configure AI model providers" title="${t("appShell.modelsTitle")}" data-short="${t("common.mod")}" type="button"><span>${t("navigation.models")}</span></button>
-          <button id="marketplace-nav-button" data-tooltip="Skills | Install AI skill packs from the marketplace" data-testid="marketplace-button" class="with-badge" title="${t("appShell.skillsTitle")}" data-short="${t("common.skl")}" type="button"><span>${t("common.skills")}</span><small>${t("navigation.new")}</small></button>
+          <button data-tooltip="Home | Return to the main dashboard" title="${t("appShell.homeTitle")}" data-short="${t("common.home")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>${t("common.home")}</span>
+          </button>
+          <button class="active" data-tooltip="Workspace | Your active project and editor" title="${t("appShell.workspaceTitle")}" data-short="${t("common.wrk")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span>${t("common.workspace")}</span>
+          </button>
+          <button data-tooltip="Repository | Browse and manage your files" title="${t("appShell.repoTitle")}" data-short="${t("common.repo")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>${t("common.repo")}</span>
+          </button>
+          <button id="kanban-nav-button" data-tooltip="Tasks | Kanban board for task management" title="${t("appShell.kanbanTitle")}" data-short="${t("common.tasks")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>${t("common.tasks")}</span>
+          </button>
+          <button id="audit-nav-button" data-tooltip="Activity | Audit log of all actions" title="${t("appShell.activityTitle")}" data-short="${t("common.act")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>${t("common.activity")}</span>
+          </button>
+          <button data-tooltip="Models | Configure AI model providers" title="${t("appShell.modelsTitle")}" data-short="${t("common.mod")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+            <span>${t("navigation.models")}</span>
+          </button>
+          <button id="marketplace-nav-button" data-tooltip="Skills | Install AI skill packs from the marketplace" data-testid="marketplace-button" class="with-badge" title="${t("appShell.skillsTitle")}" data-short="${t("common.skl")}" type="button">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <span>${t("common.skills")}</span><small>${t("navigation.new")}</small>
+          </button>
         </nav>
-        <button class="settings-button" data-tooltip="Settings | Configure shortcuts, keys, and preferences" data-testid="settings-button" title="${t("appShell.settingsTitle")}" data-short="${t("common.cfg")}" type="button"><span>${t("common.settings")}</span></button>
+        <button class="settings-button" data-tooltip="Settings | Configure shortcuts, keys, and preferences" data-testid="settings-button" title="${t("appShell.settingsTitle")}" data-short="${t("common.cfg")}" type="button">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>${t("common.settings")}</span>
+        </button>
       </aside>
       <div id="marketplace-root">${renderMarketplaceOverlay(model.get("marketplaceOpen"), model.get("onboardingOpen"), model.get("suggestedSkill"), model.get("marketplaceTab"), model.get("marketplaceSnapshot"), model.get("marketplaceDownloads"), model.get("marketplaceSearchQuery"), model.get("enterpriseSkills"))}</div>
       <div id="installation-progress-root"></div>
@@ -55,38 +77,32 @@ export function renderMainLayout(ctx: EventHandlerContext): void {
       <div id="settings-root">${renderSettingsOverlay(model.get("settingsOpen"), model.get("currentSession"), ctx.sessionUsageService.getSnapshot(), model.get("updateStatus"), model.get("byokKeys"), "", "")}</div>
       <div id="upgrade-root">${renderUpgradeModal(model.get("upgradeModalFeature"))}</div>
       <section class="workspace-panel scroll-area" aria-label="${t("workspace.workspacesAndProfiles")}">
-        <article class="plan-card glass-card">
-          <div class="plan-icon">${t("common.pro")}</div>
-          <div>
-            <strong id="plan-name">${t("session.loadingPlan")}</strong>
-            <span id="plan-renewal">${t("session.checkingSession")}</span>
-          </div>
-          <button id="sign-in-button" data-tooltip="Sign In | Authenticate to unlock premium features" type="button">${t("session.signIn")}</button>
-        </article>
+        <div class="workspace-panel-inner">
+          <article class="premium-status-card">
+            <div class="status-indicator"></div>
+            <div>
+              <strong>Workspace ready</strong>
+              <span>System fully initialized</span>
+            </div>
+            <button class="icon-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+            </button>
+          </article>
 
-        <header class="panel-heading">
-          <span>${t("workspace.profiles")}</span>
-          <div>
-            <span id="active-skillpack-badge" class="active-skillpack-badge">Backend</span>
-            <button id="workspace-open-skillpacks-button" title="${t("common.manageSkillpacks")}" type="button">+</button>
-          </div>
-        </header>
-        <div id="profile-list" class="profile-list best-profiles">${renderBestSkillpackList(ctx.skillpackManager.listInstalled())}</div>
+          ${renderSidebarSanoShield()}
 
-        <button id="reset-skillpack-button" class="reset-card" type="button">
-          <span>${t("common.sync")}</span>
-          <strong>${t("workspace.reset")}</strong>
-          <small id="reset-plan-copy">${t("workspace.resetCopy")}</small>
-        </button>
+          <article class="premium-skillpack-card">
+            <header>
+              <span>Active Skillpack</span>
+              <div class="skillpack-badge">Backend</div>
+            </header>
+            <p>Oclushion is currently optimized for Node.js, Express, and Database development.</p>
+          </article>
 
-        <section id="repo-card" class="repo-card" data-testid="repo-card">${renderRepoCard(model.get("activeRepoScan"), model.get("collapsedDirectories"))}</section>
-        ${renderOnboardingProgress(ctx.onboardingService)}
-        ${renderSidebarSanoShield()}
-
-        <footer class="workspace-footer">
-          <span id="mini-plan" class="mini-plan">${t("workspace.plan")}</span>
-          <span>${t("workspace.v123")}</span>
-        </footer>
+          <section id="repo-card" class="repo-card" data-testid="repo-card">
+            ${renderRepoCard(model.get("activeRepoScan"), model.get("collapsedDirectories"))}
+          </section>
+        </div>
       </section>
 
       <section id="central-shell" class="editor-shell" data-testid="central-shell" aria-label="${t("workspace.centralEditor")}">

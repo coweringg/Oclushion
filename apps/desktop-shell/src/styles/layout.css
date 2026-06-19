@@ -1,35 +1,29 @@
 .oclushion-root {
   display: grid;
-  grid-template-columns: 72px 48px 300px 1fr;
+  grid-template-columns: 70px 340px 1fr;
   grid-template-rows: 1fr 24px;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: var(--color-bg-base, #1e1e1e);
-  color: var(--color-text-base, #cccccc);
+  background-color: var(--ocl-bg-deep, #05070C);
+  color: var(--ocl-text, #ffffff);
 }
 
 .ocl-org-sidebar {
-  background-color: var(--color-bg-darker, #181818);
-  border-right: 1px solid var(--color-border, #333);
+  background-color: var(--ocl-bg-web, #070A11);
+  border-right: 1px solid var(--ocl-line, rgba(255, 255, 255, 0.06));
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 0;
-  gap: 12px;
+  padding: 16px 0;
+  gap: 24px;
   overflow-y: auto;
 }
 
 .ocl-activity-bar {
-  background-color: #1e1e1e;
-  border-right: 1px solid var(--color-border, #333);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 0;
-  gap: 16px;
-  z-index: 10;
+  display: none;
 }
+
 
 .ocl-status-bar {
   grid-column: 1 / -1;
@@ -688,7 +682,7 @@ button:focus-visible,
 
 @media (max-width: 1024px) {
   .oclushion-root {
-    grid-template-columns: 56px 1fr;
+    grid-template-columns: 70px 1fr;
   }
   .ocl-context-pane {
     position: fixed;

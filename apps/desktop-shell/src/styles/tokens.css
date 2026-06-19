@@ -1,41 +1,55 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  --ocl-bg: #080d16;
-  --ocl-bg-deep: #020610;
-  --ocl-bg-web: #020611;
-  --ocl-panel: #0d1521;
-  --ocl-panel-2: #101927;
-  --ocl-panel-3: #151f31;
-  --ocl-editor: #0a111c;
-  --ocl-tabs-bg: #0c1421;
-  --ocl-line: rgba(136, 153, 180, 0.16);
-  --ocl-line-strong: rgba(142, 101, 255, 0.55);
-  --ocl-line-navbar: rgba(144, 84, 255, 0.78);
-  --ocl-text: #edf3ff;
-  --ocl-soft: #aeb8ca;
-  --ocl-muted: #7f8a9d;
-  --ocl-muted-2: #b4b8c8;
-  --ocl-dim: #848a9e;
-  --ocl-purple: #7b4dff;
-  --ocl-purple-2: #9b5dff;
-  --ocl-purple-3: #8f3cff;
-  --ocl-violet: #5c63ff;
-  --ocl-cyan: #22d7ff;
-  --ocl-green: #45e5a2;
-  --ocl-orange: #ffb45a;
-  --ocl-red: #ff5b66;
-  --ocl-gold: #ffd66c;
-  --ocl-syntax-kw: #d66bff;
-  --ocl-syntax-str: #ffb25f;
-  --ocl-syntax-type: #28dcff;
-  --ocl-syntax-fn: #ffc35e;
-  --ocl-syntax-num: #8fb7ff;
-  --ocl-syntax-bool: #5ae29c;
-  --ocl-syntax-line: #647287;
+  --ocl-bg: #090B14;
+  --ocl-bg-deep: #05070C;
+  --ocl-bg-web: #070A11;
+  
+  --ocl-panel: rgba(20, 24, 38, 0.4);
+  --ocl-panel-2: rgba(30, 35, 50, 0.5);
+  --ocl-panel-3: rgba(40, 45, 65, 0.6);
+  --ocl-editor: rgba(10, 14, 25, 0.5);
+  --ocl-tabs-bg: rgba(15, 20, 32, 0.7);
+  
+  --ocl-line: rgba(255, 255, 255, 0.06);
+  --ocl-line-strong: rgba(255, 255, 255, 0.12);
+  --ocl-line-navbar: rgba(255, 255, 255, 0.08);
+  
+  --ocl-text: #ffffff;
+  --ocl-soft: #d1d5e0;
+  --ocl-muted: #8b94a8;
+  --ocl-muted-2: #656c80;
+  --ocl-dim: #4b5266;
+  
+  --ocl-purple: #8B5CF6;
+  --ocl-purple-2: #A78BFA;
+  --ocl-purple-3: #C4B5FD;
+  --ocl-blue: #3B82F6;
+  --ocl-accent: #8B5CF6;
+  --ocl-violet: #6366F1;
+  --ocl-cyan: #06B6D4;
+  --ocl-green: #10B981;
+  --ocl-orange: #F59E0B;
+  --ocl-red: #EF4444;
+  --ocl-gold: #FBBF24;
+  
+  --ocl-gradient-primary: linear-gradient(135deg, var(--ocl-purple) 0%, var(--ocl-blue) 100%);
+  --ocl-gradient-text: linear-gradient(to right, #ffffff 0%, #A78BFA 100%);
+
+  --ocl-syntax-kw: #C4B5FD;
+  --ocl-syntax-str: #FCD34D;
+  --ocl-syntax-type: #67E8F9;
+  --ocl-syntax-fn: #FDE047;
+  --ocl-syntax-num: #93C5FD;
+  --ocl-syntax-bool: #6EE7B7;
+  --ocl-syntax-line: #4b5266;
+  
   --font-sans: "Inter", "Segoe UI", Arial, sans-serif;
   --font-mono: "JetBrains Mono", Consolas, monospace;
+  
   --transition-fast: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 300ms cubic-bezier(0.25, 1, 0.5, 1);
+  
   color: var(--ocl-text);
   background: var(--ocl-bg-deep);
   font-family: var(--font-sans);
