@@ -4,6 +4,7 @@ import { listen } from "@tauri-apps/api/event";
 import { SanoShield } from "../sano-shield.service";
 import type { PermissionManager } from "../security/permission.manager";
 import type { TerminalDataEvent, TerminalExitEvent, TerminalSession } from "./terminal.types";
+import { logger } from "../utils/logger";
 
 type TerminalListener = (session: TerminalSession, data: string) => void;
 type TerminalExitListener = (session: TerminalSession, code: number | null) => void;
@@ -39,6 +40,10 @@ export class TerminalService {
   ) {}
 
   public async start(): Promise<void> {
+    if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+      logger.warn("Terminal", "Terminal unavailable — not in Tauri context");
+      return;
+    }
     this.disposers.push(await this.bridge.onData((event) => this.ingestData(event)));
     this.disposers.push(await this.bridge.onExit((event) => this.ingestExit(event)));
   }
