@@ -36,14 +36,21 @@ export class TerminalService {
   public constructor(
     private readonly shield: SanoShield,
     private readonly permissions?: PermissionManager,
-    private readonly bridge: TerminalBridge = createTauriTerminalBridge(),
-  ) {}
+    bridge?: TerminalBridge,
+  ) {
+    if (bridge) {
+      this.bridge = bridge;
+    } else if (typeof window !== "undefined" && "__TAURI_INTERNALS__" in window) {
+      this.bridge = createTauriTerminalBridge();
+    } else {
+      logger.warn("Terminal", "Terminal unavailable — not in Tauri context");
+      this.bridge = createNoopTerminalBridge();
+    }
+  }
+
+  private readonly bridge: TerminalBridge;
 
   public async start(): Promise<void> {
-    if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
-      logger.warn("Terminal", "Terminal unavailable — not in Tauri context");
-      return;
-    }
     this.disposers.push(await this.bridge.onData((event) => this.ingestData(event)));
     this.disposers.push(await this.bridge.onExit((event) => this.ingestExit(event)));
   }
@@ -251,6 +258,19 @@ export function createTauriTerminalBridge(): TerminalBridge {
     resize: (sessionId, cols, rows) => invoke<void>("terminal_resize", { sessionId, cols, rows }),
     onData: async (listener) => listen<TerminalDataEvent>("terminal:data", (event) => listener(event.payload)),
     onExit: async (listener) => listen<TerminalExitEvent>("terminal:exit", (event) => listener(event.payload)),
+  };
+}
+
+function createNoopTerminalBridge(): TerminalBridge {
+  return {
+    spawnUser: async () => ({}),
+    spawnAgent: async () => ({}),
+    runAgentCommand: async () => undefined,
+    write: async () => undefined,
+    kill: async () => undefined,
+    resize: async () => undefined,
+    onData: async () => () => undefined,
+    onExit: async () => () => undefined,
   };
 }
 
