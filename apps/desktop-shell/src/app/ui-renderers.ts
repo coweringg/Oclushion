@@ -1,12 +1,11 @@
 import { renderEmptyState } from "../ui/empty-state";
-import type { FileTreeNode, RepoScanResult, FileScanType } from "../repo-scanner";
+import type { FileTreeNode, RepoScanResult } from "../repo-scanner";
 import type { PackedRepositoryContext } from "../context.service";
 import type { SafeDiffProposal } from "../safe-diff.service";
 import type { MarketplaceSnapshot, SuggestedSkill, InstallationProgress, MarketplaceSkillView } from "../marketplace/marketplace.types";
 import type { MarketplaceSearchResult } from "../marketplace/marketplace-search.service";
 import type { EnterpriseSkill } from "../types/enterprise-registry";
 import type { InstalledSkillpack } from "../types/skillpack";
-import type { SkillpackSnapshot } from "../skillpacks/skillpack.manager";
 import type { AuditEvent, AuditSnapshot } from "../audit.service";
 import type { OrchestratorSnapshot } from "../agents/types";
 import type { KanbanTask, KanbanColumn } from "../kanban/kanban.types";
@@ -126,6 +125,8 @@ export function renderBestRightRail(
       </header>
 
       <div id="agent-swarm-root"></div>
+
+      <div id="assistant-hub-root"></div>
 
       <label class="field hidden-control">
         <span>${t("chat.model")}</span>
@@ -1295,6 +1296,7 @@ export function renderAppTitlebar(
       </div>
       <div class="titlebar-status"><span></span> ${t("workspace.ready")} <small>i</small></div>
       <div class="titlebar-spacer"></div>
+      <button id="spatial-toggle-button" type="button" title="Toggle spatial canvas mode">◇ Layout</button>
       <button id="titlebar-settings-button" class="titlebar-usage" type="button" title="${t("settings.language")}">${t("settings.creditsValue", { count: usage.creditsUsed })}</button>
       <button class="titlebar-pro" type="button">${t("common.pro")}</button>
       <button class="titlebar-icon" title="${t("common.notifications")}" type="button">${t("common.bell")}</button>
@@ -1505,50 +1507,4 @@ function buildFileTree(result: RepoScanResult, gitStatuses?: GitStatusMap): File
   }));
 }
 
-export function renderWelcomeOnboarding(): string {
-  return `
-    <div class="onboarding-backdrop" id="onboarding-backdrop">
-      <div class="onboarding-card" role="dialog" aria-label="Welcome to Oclushion">
-        <div class="onboarding-header">
-          <div class="onboarding-logo">O</div>
-          <h1>Welcome to Oclushion</h1>
-          <p>Your AI-native desktop IDE. Let's get you started in 3 steps.</p>
-        </div>
 
-        <div class="onboarding-steps">
-          <div class="onboarding-step" data-step="open_repo">
-            <div class="onboarding-step-icon">1</div>
-            <div class="onboarding-step-content">
-              <h3>Open a Repository</h3>
-              <p>Click the folder icon or press Ctrl+O to open your project folder.</p>
-            </div>
-            <span class="onboarding-step-status">${t("common.next")}</span>
-          </div>
-
-          <div class="onboarding-step" data-step="configure_api">
-            <div class="onboarding-step-icon">2</div>
-            <div class="onboarding-step-content">
-              <h3>Configure API Key</h3>
-              <p>Go to Settings and add your OpenAI or Anthropic API key.</p>
-            </div>
-            <span class="onboarding-step-status">${t("common.next")}</span>
-          </div>
-
-          <div class="onboarding-step" data-step="send_prompt">
-            <div class="onboarding-step-icon">3</div>
-            <div class="onboarding-step-content">
-              <h3>Send Your First Prompt</h3>
-              <p>Type a message in the chat and press Enter to start coding with AI.</p>
-            </div>
-            <span class="onboarding-step-status">${t("common.next")}</span>
-          </div>
-        </div>
-
-        <div class="onboarding-actions">
-          <button id="onboarding-skip" class="onboarding-btn-skip" type="button">Skip Tour</button>
-          <button id="onboarding-start" class="onboarding-btn-start" type="button">Get Started</button>
-        </div>
-      </div>
-    </div>
-  `;
-}

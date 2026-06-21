@@ -13,6 +13,7 @@ import { GitStatusService } from "../editor/git-status.service";
 import { SearchService } from "../editor/search.service";
 import { ErrorHandlerService } from "../error-handler/error-handler.service";
 import { OnboardingService } from "../onboarding/onboarding.service";
+import { OnboardingWizard } from "../onboarding/onboarding-wizard";
 import { TourService } from "../tour/tour.service";
 import { mainAppTour } from "../tour/tour.default";
 import { ContextualTooltipService } from "../tooltip/tooltip.service";
@@ -45,14 +46,14 @@ import {
   refreshSettingsOverlay,
   refreshEntitlementControls,
   refreshCentralShell,
+  refreshSpatialLayout,
   checkDesktopUpdates,
   renderSession,
   initializeKeyboardShortcuts,
+  setupCommandPaletteListeners,
 } from "./event-handlers";
 import { t } from "../i18n/translate";
 import { translateUI } from "../i18n/translate";
-import { playSuccessSound, playErrorSound } from "../notifications/notification-sound";
-import type { TaskCompletionPayload } from "../notifications/task-notifier";
 import { enableShortcutTooltips } from "../ui/shortcut-tooltip";
 import { showOnboardingDashboard } from "../onboarding/onboarding-dashboard";
 import { renderMainLayout } from "./initialize-renderers";
@@ -128,14 +129,53 @@ export async function initializeAppLifecycle(services: ServiceContext): Promise<
     fileSearchService: new FileSearchService(),
     installationProgressService: new InstallationProgressService(),
     canvasService: services.canvasService,
+    spatialLayoutService: services.spatialLayoutService,
     intentRouter: services.intentRouter,
   };
 
   renderMainLayout(ctx);
+  ctx.model.set("layoutMode", ctx.spatialLayoutService.getMode());
+  refreshSpatialLayout(ctx);
   const tooltipService = new ContextualTooltipService();
   tooltipService.init();
 
   await mountLazyControllers(ctx);
+
+  const wizard = new OnboardingWizard(
+    services.persistentStore,
+    async () => {
+      try {
+        const { open } = await import("@tauri-apps/plugin-dialog");
+        return await open({ directory: true, multiple: false, title: "Select your project folder" });
+      } catch {
+        const folder = prompt("Enter the path to your project folder:");
+        return folder ?? null;
+      }
+    },
+    async (provider, key) => {
+      const knownProviders = ["openai", "anthropic"] as const;
+      if (knownProviders.includes(provider as any)) {
+        await ctx.secureKeysService.saveApiKey(provider as "openai" | "anthropic", key);
+      }
+    },
+    (text) => {
+      const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
+      if (input) {
+        input.value = text;
+        const event = new Event("input", { bubbles: true });
+        input.dispatchEvent(event);
+        input.focus();
+        document.querySelector<HTMLButtonElement>("#chat-send-button")?.click();
+      }
+    },
+  );
+
+  if (await wizard.shouldShow()) {
+    const root = document.createElement("div");
+    root.id = "onboarding-wizard-root";
+    document.body.appendChild(root);
+    wizard.mount(root);
+  }
 
   renderSession(ctx, model.get("currentSession"));
   lifecycleUnsubscribers.push(subscribeToSession((session) => renderSession(ctx, session)));
@@ -175,6 +215,8 @@ export async function initializeAppLifecycle(services: ServiceContext): Promise<
   attachSettingsInteractions(ctx);
   attachAuthInteractions(ctx);
   attachRepoInteractions(ctx);
+
+  lifecycleUnsubscribers.push(setupCommandPaletteListeners(ctx));
 
   void checkDesktopUpdates(ctx);
   refreshRepoCard(ctx);

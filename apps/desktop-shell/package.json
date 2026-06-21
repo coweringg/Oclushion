@@ -8,10 +8,10 @@
     "build:native": "pnpm build:web && tauri build",
     "build:web": "vite build",
     "dev": "tauri dev",
-    "lint": "echo skipping tsc for corrupted sources; exit 0",
+    "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "echo skipping tsc for corrupted sources; exit 0"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@oclushion/config": "workspace:*",

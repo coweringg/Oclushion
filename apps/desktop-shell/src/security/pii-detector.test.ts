@@ -63,7 +63,11 @@ describe("PiiDetector", () => {
     const overlapping = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature";
     const result = detector.detectAll(overlapping);
     for (let i = 1; i < result.length; i++) {
-      expect(result[i].start).toBeGreaterThanOrEqual(result[i - 1].end);
+      const current = result[i];
+      const previous = result[i - 1];
+      if (current && previous) {
+        expect(current.start).toBeGreaterThanOrEqual(previous.end);
+      }
     }
   });
 

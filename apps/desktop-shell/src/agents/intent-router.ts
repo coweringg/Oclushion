@@ -48,9 +48,10 @@ User Dictation: "${text}"
 `;
 
     try {
-      const response = await this.modelRouter.routeFastest({
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.1,
+      const response = await this.modelRouter.generate({
+        model: "claude-sonnet-4-6",
+        systemPrompt: "You are the Oclushion Intent Router. Classify intents from voice dictation.",
+        userMessage: prompt,
       });
 
       const jsonStr = response.content.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -84,18 +85,12 @@ User Dictation: "${text}"
   private async executeIntent(decision: IntentDecision): Promise<void> {
     switch (decision.intent) {
       case "CODE_EDIT":
-        this.orchestrator.spawnAgent({
-          type: "coding",
-          prompt: decision.actionPayload,
-          priority: "high"
-        });
+        document.dispatchEvent(new CustomEvent("ocl-code-edit-intent", { detail: decision.actionPayload }));
         break;
       case "CREATE_TASK":
         await this.kanban.createTask({
           title: decision.actionPayload.slice(0, 50),
           description: decision.actionPayload,
-          columnId: "todo",
-          tags: ["voice-generated"]
         });
         break;
       case "COMMAND":

@@ -173,7 +173,7 @@ export class EditorController {
       parent: this.container!,
     });
 
-    this.editorView.dispatch({
+    this.editorView!.dispatch({
       effects: this.reviewExt.setComments.of([
         {
           id: "mock-1",
@@ -335,7 +335,7 @@ export class EditorController {
           file.content = content;
           this.syncEditorContent(file);
         } catch (err) {
-          logger.warn("Editor", "File watch read failed:", event.path, err);
+          logger.warn("Editor", `File watch read failed: ${event.path}`, err);
         }
       }
     }

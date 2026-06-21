@@ -52,11 +52,11 @@ class GhostTextWidget extends WidgetType {
     return span;
   }
 
-  eq(other: GhostTextWidget): boolean {
+  override eq(other: GhostTextWidget): boolean {
     return other.text === this.text;
   }
 
-  updateDOM(): boolean {
+  override updateDOM(): boolean {
     return false;
   }
 }

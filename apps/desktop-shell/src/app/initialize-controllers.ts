@@ -68,7 +68,7 @@ export async function initializeAllPhase4Controllers(
 export async function mountLazyControllers(ctx: EventHandlerContext): Promise<void> {
   const controllers = [
     import("../ui/command-palette.controller").then(({ CommandPaletteController }) => {
-      const palette = new CommandPaletteController(ctx.voiceCapture, ctx.intentRouter);
+      const palette = new CommandPaletteController(ctx.voiceCapture, ctx.intentRouter, ctx.fileSearchService);
       palette.mount(document.body);
     }),
     import("../ui/os-tabs.controller").then(({ OsTabsController }) => {
@@ -120,6 +120,24 @@ export async function mountLazyControllers(ctx: EventHandlerContext): Promise<vo
     import("../ui/repo-intelligence.controller").then(({ RepoIntelligenceController }) => {
       const repoIntel = new RepoIntelligenceController();
       repoIntel.mount("repo-intelligence-root");
+    }),
+    import("../ui/renderers/canvas-spatial.renderer").then(({ SpatialCanvasRenderer }) => {
+      const spatialRenderer = new SpatialCanvasRenderer(
+        ctx.canvasService,
+        ctx.spatialLayoutService,
+      );
+      const container = document.getElementById("spatial-canvas-root");
+      if (container) {
+        spatialRenderer.render(container);
+      }
+    }),
+    import("../agents/assistant-hub.controller").then(({ AssistantHubController }) => {
+      const hub = new AssistantHubController(
+        { root: document } as never,
+        ctx.secureKeysService,
+        ctx.modelRouter,
+      );
+      hub.mountTo("assistant-hub-root");
     }),
   ];
 

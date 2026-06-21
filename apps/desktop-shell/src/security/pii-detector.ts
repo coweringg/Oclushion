@@ -110,9 +110,14 @@ export class PiiDetector {
 
       if (matchedContexts.length > 0) {
         const types = matchedContexts.flatMap((m) => m.types);
+        const primaryType = types[0];
+        if (!primaryType) continue;
+
         const assignmentMatch = trimmedLine.match(/[:=]\s*(.+)$/);
         if (assignmentMatch) {
-          const value = assignmentMatch[1].trim();
+          const valueMatch = assignmentMatch[1];
+          if (!valueMatch) continue;
+          const value = valueMatch.trim();
           const colonIndex = trimmedLine.indexOf(assignmentMatch[0]);
           const eqIndex = trimmedLine.indexOf("=");
           const separatorIndex = eqIndex >= 0 ? eqIndex : colonIndex;
@@ -120,8 +125,8 @@ export class PiiDetector {
           if (value.length >= 8 && value.length <= 500 && !seen.has(valueStart) && !/^[0-9]+$/.test(value)) {
             seen.add(valueStart);
             detections.push({
-              type: types[0],
-              label: types[0].toUpperCase(),
+              type: primaryType,
+              label: primaryType.toUpperCase(),
               start: valueStart,
               end: valueStart + value.length,
               text: value,
@@ -144,10 +149,13 @@ export class PiiDetector {
     if (detections.length <= 1) return detections;
 
     const merged: PiiDetection[] = [];
-    let current = detections[0];
+    const first = detections[0];
+    if (!first) return merged;
+    let current = first;
 
     for (let i = 1; i < detections.length; i++) {
       const next = detections[i];
+      if (!next) continue;
       if (next.start <= current.end) {
         current = {
           ...current,

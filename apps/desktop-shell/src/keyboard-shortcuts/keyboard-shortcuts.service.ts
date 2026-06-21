@@ -22,8 +22,6 @@ export class KeyboardShortcutsService {
   private shortcuts = new Map<string, Shortcut>();
   private handlers = new Map<string, ShortcutHandler>();
   private listeners = new Set<KeyboardShortcutListener>();
-  private commandPaletteOpen = false;
-  private commandPaletteElement: HTMLElement | null = null;
 
   register(shortcut: Shortcut, handler: ShortcutHandler): void {
     const compositeKey = this.buildCompositeKey(shortcut);
@@ -124,87 +122,14 @@ export class KeyboardShortcutsService {
   }
 
   toggleCommandPalette(): void {
-    this.commandPaletteOpen = !this.commandPaletteOpen;
-    if (this.commandPaletteOpen) {
-      this.showCommandPalette();
+    const overlay = document.getElementById("command-palette-overlay");
+    if (overlay?.classList.contains("open")) {
+      overlay.classList.remove("open");
+      const input = document.getElementById("command-palette-input") as HTMLInputElement | null;
+      input?.blur();
     } else {
-      this.hideCommandPalette();
+      window.dispatchEvent(new CustomEvent("ocl-command-palette-toggle", { detail: { open: true, mode: "commands" } }));
     }
-  }
-
-  private showCommandPalette(): void {
-    if (this.commandPaletteElement) return;
-
-    const palette = document.createElement("div");
-    palette.className = "command-palette-overlay";
-    palette.innerHTML = `
-      <div class="command-palette" role="dialog" aria-label="Command Palette">
-        <input type="text" class="command-palette-input" placeholder="Type a command..." autofocus />
-        <div class="command-palette-list">
-          ${this.renderCommandList()}
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(palette);
-    this.commandPaletteElement = palette;
-
-    const input = palette.querySelector<HTMLInputElement>(".command-palette-input");
-    input?.focus();
-
-    input?.addEventListener("input", () => {
-      const query = input.value.toLowerCase();
-      const list = palette.querySelector(".command-palette-list");
-      if (list) {
-        list.innerHTML = this.renderCommandList(query);
-      }
-    });
-
-    palette.addEventListener("click", (e) => {
-      if (e.target === palette) {
-        this.toggleCommandPalette();
-      }
-    });
-
-    input?.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.toggleCommandPalette();
-      }
-    });
-  }
-
-  private hideCommandPalette(): void {
-    this.commandPaletteElement?.remove();
-    this.commandPaletteElement = null;
-  }
-
-  private renderCommandList(query = ""): string {
-    const shortcuts = this.getAll()
-      .filter(
-        (s) =>
-          !query ||
-          s.description.toLowerCase().includes(query) ||
-          s.action.toLowerCase().includes(query) ||
-          s.category.toLowerCase().includes(query),
-      )
-      .sort((a, b) => a.category.localeCompare(b.category));
-
-    if (shortcuts.length === 0) {
-      return '<div class="command-palette-empty">No commands found</div>';
-    }
-
-    let currentCategory = "";
-    return shortcuts
-      .map((shortcut) => {
-        const categoryChanged = shortcut.category !== currentCategory;
-        currentCategory = shortcut.category;
-        const prefix = categoryChanged
-          ? `<div class="command-palette-category">${shortcut.category}</div>`
-          : "";
-        const displayKey = this.formatKey(shortcut);
-        return `${prefix}<button class="command-palette-item" data-action="${shortcut.action}" type="button"><span>${shortcut.description}</span><span class="command-palette-key">${displayKey}</span></button>`;
-      })
-      .join("");
   }
 
   private getKeyFromEvent(event: KeyboardEvent): string {

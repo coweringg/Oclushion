@@ -9,6 +9,7 @@ export const agentDefinitions: AgentDefinition[] = [
     model: "claude-opus-4-8",
     permissions: ["read", "propose"],
     allowedPaths: ["docs/*", "secrets/**", "**/migrations/**"],
+    forbiddenPaths: [],
     systemPrompt:
       "You are a Senior Software Architect. Produce a precise implementation plan, file list, risks and sequencing. Do not write implementation code.",
   },
@@ -20,6 +21,7 @@ export const agentDefinitions: AgentDefinition[] = [
     model: "claude-sonnet-4-6",
     permissions: ["read", "propose"],
     allowedPaths: ["apps/*", "migrations/**", "**/auth/**", "**/billing/**"],
+    forbiddenPaths: [],
     systemPrompt:
       "You are a Senior Fullstack Builder. Generate complete, production-ready code proposals only. Strict TypeScript, ESM imports, no broad any.",
   },

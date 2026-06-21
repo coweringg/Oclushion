@@ -16,7 +16,7 @@ export class SemanticEmbedder {
   private async initialize(): Promise<boolean> {
     try {
       const mod = await import("@huggingface/transformers");
-      this.pipeline = await mod.pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+      this.pipeline = (await mod.pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2")) as unknown as SemanticEmbedder["pipeline"];
       this.initialized = true;
       logger.info("SemanticEmbedder", "Embedding model loaded successfully");
       return true;
@@ -42,9 +42,12 @@ export class SemanticEmbedder {
     let normA = 0;
     let normB = 0;
     for (let i = 0; i < a.length; i++) {
-      dot += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
+      const aVal = a[i];
+      const bVal = b[i];
+      if (aVal === undefined || bVal === undefined) continue;
+      dot += aVal * bVal;
+      normA += aVal * aVal;
+      normB += bVal * bVal;
     }
     const denom = Math.sqrt(normA) * Math.sqrt(normB);
     return denom === 0 ? 0 : dot / denom;

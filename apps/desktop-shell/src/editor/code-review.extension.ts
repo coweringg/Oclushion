@@ -1,14 +1,23 @@
-import type { ReviewComment } from "../multiplayer/multiplayer.types";
+export type ReviewCommentDisplay = {
+  id: string;
+  authorId: string;
+  authorName: string;
+  message: string;
+  lineNumber: number;
+  codeSnippet: string;
+  status: "open" | "resolved";
+  createdAt: string;
+};
 
 export function createCodeReviewExtension(
-  comments: ReviewComment[],
+  comments: ReviewCommentDisplay[],
   onTriggerAI: (commentId: string) => void
 ) {
   const { StateField, StateEffect } = require("@codemirror/state");
   const { Decoration, WidgetType, EditorView } = require("@codemirror/view");
 
   class ReviewWidget extends WidgetType {
-    constructor(private readonly comment: ReviewComment) {
+    constructor(private readonly comment: ReviewCommentDisplay) {
       super();
     }
 
@@ -69,7 +78,7 @@ export function createCodeReviewExtension(
     }
   }
 
-  const setComments = StateEffect.define<ReviewComment[]>();
+  const setComments = StateEffect.define();
 
   const reviewField = StateField.define({
     create() {

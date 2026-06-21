@@ -118,7 +118,7 @@ export class LMStudioProvider implements ILLMProvider {
               if (!parsed.success) continue;
               const choice = parsed.data.choices[0];
               if (choice?.delta?.content) {
-                yield { delta: choice.delta.content, finishReason: choice.finish_reason ?? undefined };
+                yield { delta: choice.delta.content, finishReason: (choice.finish_reason ?? undefined) as "stop" | "length" | "error" | undefined };
               }
               if (choice?.finish_reason === "stop") break;
             } catch {  }

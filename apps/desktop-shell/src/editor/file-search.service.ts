@@ -30,6 +30,10 @@ export class FileSearchService {
     }));
   }
 
+  getAllFiles(): Array<{ path: string; name: string }> {
+    return this.files;
+  }
+
   search(query: string): FileSearchResult[] {
     if (!query.trim()) return [];
 

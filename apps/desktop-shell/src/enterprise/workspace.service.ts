@@ -76,9 +76,9 @@ export class WorkspaceService {
   public update(id: string, updates: Partial<Workspace>): Workspace | null {
     const index = this.workspaces.findIndex((w) => w.id === id);
     if (index === -1) return null;
-    this.workspaces[index] = { ...this.workspaces[index], ...updates, id };
+    this.workspaces[index] = { ...this.workspaces[index], ...updates, id } as Workspace;
     this.save();
-    return this.workspaces[index];
+    return this.workspaces[index] ?? null;
   }
 
   public remove(id: string): boolean {

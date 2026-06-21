@@ -77,7 +77,8 @@ export class SanoShield {
 
     const merged = combined.filter((detection, index) => {
       if (index === 0) return true;
-      return detection.start !== combined[index - 1].start || detection.end !== combined[index - 1].end;
+      const prev = combined[index - 1];
+      return !prev || detection.start !== prev.start || detection.end !== prev.end;
     });
 
     const mappings: SanoShieldTokenMapping[] = [];

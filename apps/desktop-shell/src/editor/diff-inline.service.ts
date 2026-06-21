@@ -55,7 +55,8 @@ export class DiffInlineService {
 
     for (let i = 0; i < diff.length; i++) {
       const line = diff[i];
-      
+      if (!line) continue;
+
       if (line.type === "unchanged") {
         if (currentHunk) {
           hunks.push(currentHunk);

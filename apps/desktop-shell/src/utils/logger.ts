@@ -5,7 +5,7 @@ function readLogLevel(): LogLevel {
     return process.env.VITE_LOG_LEVEL as LogLevel;
   }
   try {
-    const fromMeta = (import.meta as Record<string, unknown>)?.env as Record<string, unknown> | undefined;
+    const fromMeta = (import.meta as unknown as Record<string, unknown>)?.env as Record<string, unknown> | undefined;
     if (fromMeta && typeof fromMeta.VITE_LOG_LEVEL === 'string') {
       return fromMeta.VITE_LOG_LEVEL as LogLevel;
     }

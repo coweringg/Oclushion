@@ -9,6 +9,12 @@ import {
 import { anthropicStreamEventSchema } from "./schemas";
 import { logger } from "../utils/logger";
 
+type AnthropicContentBlock = { type: "text"; text: string };
+type AnthropicError = { error?: { message?: string } };
+type AnthropicResponse = AnthropicError & {
+  content?: AnthropicContentBlock[];
+};
+
 const SANOSHIELD_PROXY_URL = import.meta.env.VITE_SANOSHIELD_PROXY_URL ?? "http://localhost:8080";
 
 export class AnthropicProvider implements ILLMProvider {

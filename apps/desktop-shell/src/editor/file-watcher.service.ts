@@ -53,7 +53,7 @@ export class FileWatcherService {
       );
       this.watchers.set(absolutePath, unwatch);
     } catch (err) {
-      logger.warn("FileWatcher", "Failed to set up watcher:", absolutePath, err);
+      logger.warn("FileWatcher", `Failed to set up watcher: ${absolutePath}`, err);
     }
   }
 

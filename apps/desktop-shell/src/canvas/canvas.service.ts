@@ -51,7 +51,9 @@ export class CanvasService {
     
     if (this.nodes.length > 1) {
       const last = this.nodes[this.nodes.length - 2];
-      newNode.position = { x: last.position.x + 50, y: last.position.y + 50 };
+      if (last) {
+        newNode.position = { x: last.position.x + 50, y: last.position.y + 50 };
+      }
     }
 
     this.emitAndSave();

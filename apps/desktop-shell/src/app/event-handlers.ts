@@ -31,7 +31,6 @@ import type { MarketplaceService } from "../marketplace/marketplace.service";
 import type { MarketplaceSearchService, MarketplaceSearchResult, MarketplaceSortOption } from "../marketplace/marketplace-search.service";
 import type { InstallationProgressService } from "../marketplace/installation-progress.service";
 import type { ChatSessionService } from "../chat/chat-session.service";
-import type { ChatSidebarController } from "../chat/sidebar.controller";
 import type { SecureKeysService } from "../llm/secure-keys.service";
 import type { EntitlementsService } from "../billing/entitlements.service";
 import type { SessionUsageService } from "../billing/session-usage.service";
@@ -56,8 +55,6 @@ import { getOrganization } from "../enterprise/organization.service";
 import { getCachedSkills, fetchSkills, createSkill, deleteSkill, approveSkill, updateSkill } from "../enterprise/enterprise-skill.service";
 import type { EnterpriseSkill, CreateEnterpriseSkillInput } from "../types/enterprise-registry";
 import type { TerminalService } from "../terminal/terminal.service";
-import type { TerminalController } from "../terminal/terminal.controller";
-import type { EditorView } from "@codemirror/view";
 import {
   createMockRepoScanResult,
   scanRepository,
@@ -172,6 +169,7 @@ export interface EventHandlerContext {
   fileSearchService: FileSearchService;
   installationProgressService: InstallationProgressService;
   canvasService: CanvasService;
+  spatialLayoutService: import("../canvas/spatial-layout.service").SpatialLayoutService;
   intentRouter: IntentRouter;
 }
 
@@ -1748,6 +1746,12 @@ export function attachPhase3Interactions(ctx: EventHandlerContext): void {
     void detectTestFramework(ctx);
   });
 
+  document.querySelector<HTMLButtonElement>("#spatial-toggle-button")?.addEventListener("click", () => {
+    ctx.spatialLayoutService.toggleMode();
+    ctx.model.set("layoutMode", ctx.spatialLayoutService.getMode());
+    refreshSpatialLayout(ctx);
+  });
+
   document.querySelector<HTMLButtonElement>("#suggestions-refresh-btn")?.addEventListener("click", () => {
     void refreshTerminalSuggestions(ctx);
   });
@@ -2418,6 +2422,34 @@ export function attachChatInteractions(ctx: EventHandlerContext): void {
       .querySelector<HTMLInputElement>("#custom-model-input")
       ?.classList.toggle("visible", selector?.value === "custom");
   });
+
+  document.querySelector<HTMLButtonElement>("#auto-approve-toggle")?.addEventListener("click", () => {
+    const isOn = ctx.model.get("autoApprove");
+    ctx.model.set("autoApprove", !isOn);
+    refreshAutoApproveToggle();
+  });
+}
+
+export function refreshSpatialLayout(ctx: EventHandlerContext): void {
+  const root = document.querySelector<HTMLElement>("#app > main");
+  if (!root) return;
+  const isCanvas = ctx.model.get("layoutMode") === "canvas";
+  root.classList.toggle("layout-mode--canvas", isCanvas);
+  const toggle = document.querySelector<HTMLButtonElement>("#spatial-toggle-button");
+  if (toggle) {
+    toggle.classList.toggle("active", isCanvas);
+    toggle.textContent = isCanvas ? "✧ Canvas" : "◇ Layout";
+  }
+}
+
+function refreshAutoApproveToggle(): void {
+  const toggle = document.querySelector<HTMLButtonElement>("#auto-approve-toggle");
+  const status = document.querySelector<HTMLElement>(".auto-approve-status");
+  if (!toggle || !status) return;
+  const isOn = toggle.classList.contains("on");
+  toggle.classList.toggle("on", !isOn);
+  toggle.classList.toggle("off", isOn);
+  status.textContent = !isOn ? "ON" : "OFF";
 }
 
 export function refreshPrivacyToggle(ctx: EventHandlerContext): void {
@@ -2648,7 +2680,6 @@ function readLocalSetting(key: string): string {
   } catch (error) {
     logger.debug('EventHandlers', 'Failed to read local setting', error);
     return "";
-    return "";
   }
 }
 
@@ -2741,4 +2772,57 @@ function normalizePlan(value: unknown): OclushionPlan {
     if (v === "enterprise") return "Enterprise";
   }
   return "Free";
+}
+
+export function setupCommandPaletteListeners(ctx: EventHandlerContext): () => void {
+  const handler = (event: Event) => {
+    const detail = (event as CustomEvent<{ commandId: string; filePath?: string }>).detail;
+    if (!detail) return;
+
+    const { commandId, filePath } = detail;
+
+    switch (commandId) {
+      case "toggle-terminal":
+        document.querySelector<HTMLButtonElement>("#terminal-toggle-button")?.click();
+        break;
+      case "toggle-god-mode":
+        void toggleGodMode(ctx);
+        break;
+      case "open-settings":
+        openSettings(ctx);
+        break;
+      case "open-marketplace":
+        void openMarketplace(ctx);
+        break;
+      case "open-audit":
+        openAuditDashboard(ctx);
+        break;
+      case "git-commit":
+        document.querySelector<HTMLButtonElement>("#git-commit-btn")?.click();
+        break;
+      case "toggle-agi":
+        document.querySelector<HTMLButtonElement>("#agi-toggle-btn")?.click();
+        break;
+      case "run-tests":
+        void runTests(ctx);
+        break;
+      case "search-project":
+        ctx.searchService.showSearchOverlay();
+        break;
+      case "new-chat":
+        document.querySelector<HTMLButtonElement>("#chat-new-session-button")?.click();
+        break;
+      case "open-file":
+        if (filePath) {
+          const file = ctx.model.get("activeRepoScan").files.find((f: { path: string }) => f.path === filePath);
+          if (file) {
+            void ctx.editorController.openFile(file.absolutePath, file.path);
+          }
+        }
+        break;
+    }
+  };
+
+  window.addEventListener("ocl-command", handler as EventListener);
+  return () => window.removeEventListener("ocl-command", handler as EventListener);
 }

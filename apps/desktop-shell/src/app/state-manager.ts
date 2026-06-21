@@ -3,9 +3,6 @@ import type { RepoScanResult } from "../repo-scanner";
 import type { PackedRepositoryContext } from "../context.service";
 import type { SafeDiffProposal } from "../safe-diff.service";
 import type { MarketplaceSnapshot, SuggestedSkill, InstallationProgress, MarketplaceSkillView } from "../marketplace/marketplace.types";
-import type { UnifiedSkillView } from "../enterprise/unified-registry.service";
-import type { SkillpackSnapshot } from "../skillpacks/skillpack.manager";
-import type { InstalledSkillpack } from "../types/skillpack";
 import type { OclushionSession } from "../auth.service";
 import type { ChatSession } from "../chat/chat-session.types";
 import type { ChatMessage as PersistentChatMessage } from "../chat/chat-session.types";
@@ -20,7 +17,6 @@ import type { DeployState } from "../shipper/shipper.types";
 import type { MultiplayerRoom } from "../multiplayer/multiplayer.types";
 import type { EntitlementFeature } from "../billing/entitlements.types";
 import type { ApiKeyProvider } from "../llm/secure-keys.service";
-import type { MCPProviderId } from "../mcp/mcp.types";
 import type { EditorState } from "../editor/editor.types";
 
 export type MarketplaceTab = "skills" | "tools" | "enterprise";
@@ -82,6 +78,8 @@ export interface AppState {
   installationProgress: InstallationProgress | null;
   updateStatus: string;
   editorState: EditorState;
+  autoApprove: boolean;
+  layoutMode: "fixed" | "canvas";
 }
 
 export type AppStateKey = keyof AppState;
@@ -160,6 +158,8 @@ export function createInitialAppState(): AppState {
     safeDiffInteractionsAttached: false,
     agentInteractionsAttached: false,
     kanbanInteractionsAttached: false,
+    autoApprove: false,
+    layoutMode: "fixed",
     privacyEnabled: true,
     safeDiffProposals: [],
     editorView: null,

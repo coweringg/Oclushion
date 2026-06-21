@@ -41,6 +41,7 @@ import { AppModel, createInitialAppState } from "./state-manager";
 import { initI18n } from "../i18n/i18n";
 import { logger } from "../utils/logger";
 import { CanvasService } from "../canvas/canvas.service";
+import { SpatialLayoutService } from "../canvas/spatial-layout.service";
 import { IntentRouter } from "../agents/intent-router";
 
 export interface ServiceContext {
@@ -82,6 +83,7 @@ export interface ServiceContext {
   errorHandler: ErrorHandlerService;
   model: AppModel;
   canvasService: CanvasService;
+  spatialLayoutService: SpatialLayoutService;
   intentRouter: IntentRouter;
 }
 
@@ -107,8 +109,9 @@ export async function initializeServices(): Promise<ServiceContext> {
   const fileOwnership = new FileOwnershipService();
   const permissionManager = new PermissionManager();
   const terminalService = new TerminalService(sanoShield, permissionManager);
+  const agentExecutor = new SecureExecutor(permissionManager, sanoShield);
   const worklogService = new WorklogService();
-  const agentRunner = new AgentRunner(modelRouter, sanoShield, terminalService, worklogService);
+  const agentRunner = new AgentRunner(modelRouter, sanoShield, agentExecutor, terminalService, worklogService);
   const agentOrchestrator = new AgentOrchestrator(agentRegistry, agentRunner, fileOwnership);
   const kanbanService = await KanbanService.create(persistentStore);
   const taskHandoff = new TaskHandoffService(kanbanService, agentOrchestrator);
@@ -187,6 +190,7 @@ export async function initializeServices(): Promise<ServiceContext> {
   });
 
   const canvasService = new CanvasService(persistentStore);
+  const spatialLayoutService = new SpatialLayoutService(persistentStore);
   const intentRouter = new IntentRouter(agentOrchestrator, kanbanService, modelRouter);
 
   return {
@@ -228,6 +232,7 @@ export async function initializeServices(): Promise<ServiceContext> {
     errorHandler,
     model,
     canvasService,
+    spatialLayoutService,
     intentRouter,
   };
 }

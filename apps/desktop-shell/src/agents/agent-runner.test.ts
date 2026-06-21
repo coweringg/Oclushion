@@ -36,6 +36,13 @@ const baseTask = {
   relatedFiles: [],
 };
 
+function createMockSecureExecutor() {
+  return {
+    runCommand: vi.fn().mockResolvedValue({ exitCode: 0, stdout: "", stderr: "" }),
+    shouldPrompt: vi.fn().mockResolvedValue(false),
+  } as never;
+}
+
 const baseContext = {
   rootPath: "/project",
   files: [{ path: "src/app.ts", content: "code here", tokens: 10 }],
@@ -46,7 +53,7 @@ describe("AgentRunner", () => {
   it("runs agent and returns completed task with output", async () => {
     const router = createMockModelRouter();
     const shield = createMockShield();
-    const runner = new AgentRunner(router as never, shield as never);
+    const runner = new AgentRunner(router as never, shield as never, createMockSecureExecutor());
 
     const result = await runner.run({
       agent: baseAgent as never,
@@ -64,7 +71,7 @@ describe("AgentRunner", () => {
 
   it("calls modelRouter.generate with correct params", async () => {
     const router = createMockModelRouter();
-    const runner = new AgentRunner(router as never, createMockShield() as never);
+    const runner = new AgentRunner(router as never, createMockShield() as never, createMockSecureExecutor());
 
     await runner.run({
       agent: baseAgent as never,
@@ -84,7 +91,7 @@ describe("AgentRunner", () => {
   it("sanitizes prompt when privacy is enabled", async () => {
     const router = createMockModelRouter();
     const shield = createMockShield();
-    const runner = new AgentRunner(router as never, shield as never);
+    const runner = new AgentRunner(router as never, shield as never, createMockSecureExecutor());
 
     await runner.run({
       agent: baseAgent as never,
@@ -100,7 +107,7 @@ describe("AgentRunner", () => {
   it("skips sanitize/restore when privacy is disabled", async () => {
     const router = createMockModelRouter();
     const shield = createMockShield();
-    const runner = new AgentRunner(router as never, shield as never);
+    const runner = new AgentRunner(router as never, shield as never, createMockSecureExecutor());
 
     await runner.run({
       agent: baseAgent as never,
@@ -115,7 +122,7 @@ describe("AgentRunner", () => {
 
   it("returns zero credits for local/ollama models", async () => {
     const router = createMockModelRouter();
-    const runner = new AgentRunner(router as never, createMockShield() as never);
+    const runner = new AgentRunner(router as never, createMockShield() as never, createMockSecureExecutor());
 
     const result = await runner.run({
       agent: { ...baseAgent, model: "ollama/llama3" } as never,
@@ -129,7 +136,7 @@ describe("AgentRunner", () => {
 
   it("builds prompt containing agent role, task input, and file context", async () => {
     const router = createMockModelRouter();
-    const runner = new AgentRunner(router as never, createMockShield() as never);
+    const runner = new AgentRunner(router as never, createMockShield() as never, createMockSecureExecutor());
 
     await runner.run({
       agent: baseAgent as never,

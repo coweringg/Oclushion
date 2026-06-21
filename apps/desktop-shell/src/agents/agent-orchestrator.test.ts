@@ -46,6 +46,7 @@ describe("AgentOrchestrator", () => {
         },
       },
       new SanoShield(),
+      { runCommand: vi.fn(), shouldPrompt: vi.fn() } as never,
     );
     const orchestrator = new AgentOrchestrator(new AgentRegistry(), runner, new FileOwnershipService());
 

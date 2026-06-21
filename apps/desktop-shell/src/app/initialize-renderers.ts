@@ -109,6 +109,8 @@ export function renderMainLayout(ctx: EventHandlerContext): void {
         ${renderCentralShell(model.get("kanbanOpen"), model.get("activeRepoScan"), model.get("collapsedDirectories"), model.get("kanbanTasks"), model.get("safeDiffProposals"), ctx.editorController.getOpenFiles(), ctx.editorController.getActiveFile()?.path ?? null)}
       </section>
 
+      <div id="spatial-canvas-root" data-testid="spatial-canvas-root"></div>
+
       <aside class="ai-panel scroll-area with-chat-history" aria-label="${t("chat.panel")}">
         <div id="chat-sidebar-root" data-testid="chat-sidebar-root" hidden></div>
         <div class="chat-main-column best-right-rail">
@@ -185,6 +187,15 @@ export function renderMainLayout(ctx: EventHandlerContext): void {
           <footer class="chat-box hidden-control">
             <label for="chat-input">${t("chat.label")}</label>
             <div id="chat-thread" class="chat-thread" aria-live="polite"></div>
+            <div class="auto-approve-bar" id="auto-approve-bar">
+              <span class="auto-approve-label">Auto-approve</span>
+              <button id="auto-approve-toggle" class="auto-approve-toggle off" type="button" title="Toggle whether AI can apply changes without asking">
+                <span class="auto-approve-track">
+                  <span class="auto-approve-thumb"></span>
+                </span>
+              </button>
+              <span class="auto-approve-status">OFF</span>
+            </div>
             <div>
               <input id="chat-input" type="text" data-tooltip="Chat Input | Type a message for the AI assistant" placeholder="${t("chat.placeholder")}" />
               <button id="chat-send-button" data-tooltip="Send | Submit your message to the AI" type="button">${t("common.send")}</button>
