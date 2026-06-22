@@ -13,10 +13,10 @@ import { GitStatusService } from "../editor/git-status.service";
 import { SearchService } from "../editor/search.service";
 import { ErrorHandlerService } from "../error-handler/error-handler.service";
 import { OnboardingService } from "../onboarding/onboarding.service";
-import { OnboardingWizard } from "../onboarding/onboarding-wizard";
 import { TourService } from "../tour/tour.service";
 import { mainAppTour } from "../tour/tour.default";
 import { ContextualTooltipService } from "../tooltip/tooltip.service";
+import type { IdeCanvasSpatial } from "../components/ide-canvas-spatial";
 import {
   attachOnboardingProgressInteractions,
   autoDetectOnboardingStep,
@@ -136,14 +136,21 @@ export async function initializeAppLifecycle(services: ServiceContext): Promise<
   renderMainLayout(ctx);
   ctx.model.set("layoutMode", ctx.spatialLayoutService.getMode());
   refreshSpatialLayout(ctx);
+
+  const spatialCanvas = document.querySelector<IdeCanvasSpatial>("ide-canvas-spatial");
+  if (spatialCanvas) {
+    spatialCanvas.canvasService = ctx.canvasService;
+    spatialCanvas.spatialLayoutService = ctx.spatialLayoutService;
+  }
+
   const tooltipService = new ContextualTooltipService();
   tooltipService.init();
 
   await mountLazyControllers(ctx);
 
-  const wizard = new OnboardingWizard(
-    services.persistentStore,
-    async () => {
+  const wizardEl = document.querySelector("ide-onboarding-wizard");
+  if (wizardEl) {
+    wizardEl.onOpenRepo = async () => {
       try {
         const { open } = await import("@tauri-apps/plugin-dialog");
         return await open({ directory: true, multiple: false, title: "Select your project folder" });
@@ -151,14 +158,14 @@ export async function initializeAppLifecycle(services: ServiceContext): Promise<
         const folder = prompt("Enter the path to your project folder:");
         return folder ?? null;
       }
-    },
-    async (provider, key) => {
+    };
+    wizardEl.onSaveApiKey = async (provider: string, key: string) => {
       const knownProviders = ["openai", "anthropic"] as const;
       if (knownProviders.includes(provider as any)) {
         await ctx.secureKeysService.saveApiKey(provider as "openai" | "anthropic", key);
       }
-    },
-    (text) => {
+    };
+    wizardEl.onSendPrompt = (text: string) => {
       const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
       if (input) {
         input.value = text;
@@ -167,14 +174,23 @@ export async function initializeAppLifecycle(services: ServiceContext): Promise<
         input.focus();
         document.querySelector<HTMLButtonElement>("#chat-send-button")?.click();
       }
-    },
-  );
+    };
 
-  if (await wizard.shouldShow()) {
-    const root = document.createElement("div");
-    root.id = "onboarding-wizard-root";
-    document.body.appendChild(root);
-    wizard.mount(root);
+    try {
+      const completed = await services.persistentStore.getItem("ocl_onboarding_completed");
+      if (completed !== "true") {
+        wizardEl.active = true;
+      }
+    } catch {
+      try {
+        const completed = localStorage.getItem("ocl_onboarding_completed");
+        if (completed !== "true") {
+          wizardEl.active = true;
+        }
+      } catch {
+        wizardEl.active = true;
+      }
+    }
   }
 
   renderSession(ctx, model.get("currentSession"));

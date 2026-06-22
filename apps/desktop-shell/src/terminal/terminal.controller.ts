@@ -209,10 +209,13 @@ export class TerminalController extends BaseController {
   private render(): void {
     const root = this.context.root.querySelector<HTMLElement>("#terminal-panel-root");
     if (!root) return;
-    root.innerHTML = this.isOpen ? this.renderOpenPanel() : "";
     root.classList.toggle("is-open", this.isOpen);
     this.context.root.querySelector("#terminal-toggle-button")?.classList.toggle("active", this.isOpen);
+    const panel = root as unknown as { isOpen: boolean; splitContent: string; agentSession: TerminalSession | null };
+    panel.isOpen = this.isOpen;
     if (this.isOpen) {
+      panel.splitContent = this.renderSplitContent();
+      panel.agentSession = this.terminalService.getAgentSession() ?? null;
       queueMicrotask(() => this.mountVisibleTerminals());
     }
   }
@@ -226,46 +229,11 @@ export class TerminalController extends BaseController {
     }
   }
 
-  private renderOpenPanel(): string {
-    const agentSession = this.terminalService.getAgentSession();
+  private renderSplitContent(): string {
     const userSessions = this.terminalService.getUserSessions();
-    const splitContent = this.splitManager
+    return this.splitManager
       ? this.renderSplitPane(this.splitManager.getLayout().root, userSessions)
       : "";
-
-    return `
-      <section class="terminal-panel" aria-label="Integrated terminal">
-        <section class="terminal-pane user">
-          <header class="terminal-split-header">
-            <div class="terminal-split-toolbar">
-              <button data-terminal-split-h type="button" title="Split horizontal">⬌</button>
-              <button data-terminal-split-v type="button" title="Split vertical">⬍</button>
-              <button id="terminal-new-user-button" type="button" title="New terminal">+</button>
-            </div>
-          </header>
-          <div id="terminal-user-mount" class="terminal-split-container">
-            ${splitContent}
-          </div>
-        </section>
-        <aside id="terminal-agent-pane" class="terminal-pane agent" tabindex="0">
-          <header class="terminal-pane-header">
-            <div>
-              <strong>AGENT TERMINAL</strong>
-              <span id="terminal-agent-status" class="${agentSession?.isAlive ? "running" : ""}">
-                ${agentSession?.isAlive ? "Running" : "Idle"}
-              </span>
-            </div>
-            <button id="terminal-agent-interrupt" type="button" title="Ctrl+C cancela el proceso actual del agente">Ctrl+C</button>
-          </header>
-          <div id="terminal-agent-mount" class="terminal-mount readonly" data-terminal-session="${agentSession?.id ?? ""}"></div>
-        </aside>
-        <footer class="terminal-suggestions" id="terminal-suggestions">
-          <span class="suggestions-label">AI:</span>
-          <div class="suggestions-list" id="suggestions-list"></div>
-          <button id="suggestions-refresh-btn" type="button" title="Get AI suggestions">✨</button>
-        </footer>
-      </section>
-    `;
   }
 
   private renderSplitPane(pane: SplitPane, sessions: TerminalSession[]): string {

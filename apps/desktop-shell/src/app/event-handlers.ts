@@ -69,20 +69,14 @@ import { changeLanguage, getCurrentLanguage } from "../i18n/i18n";
 import { t } from "../i18n/translate";
 import {
   renderRepoCard,
-  renderCentralShell,
   renderSafeDiffPanel,
-  renderMarketplaceOverlay,
   renderEnterpriseManageOverlay,
-  renderAuditOverlay,
-  renderSettingsOverlay,
   renderV3Controls,
   renderFastApplyPanel,
   renderPreviewStatus,
   renderShipperStatus,
   renderMultiplayerStatus,
   renderContextMeter,
-  renderAuthOverlay,
-  renderUpgradeModal,
   renderIdeLanguageSwitcher,
   renderMcpSettingsRows,
   renderBestSkillpackList,
@@ -624,26 +618,18 @@ export function refreshV3Panels(ctx: EventHandlerContext): void {
 }
 
 export function refreshCentralShell(ctx: EventHandlerContext): void {
-  const root = document.querySelector<HTMLElement>("#central-shell");
-  if (!root) {
-    return;
-  }
-  root.innerHTML = renderCentralShell(
-    ctx.model.get("kanbanOpen"),
-    ctx.model.get("activeRepoScan"),
-    ctx.model.get("collapsedDirectories"),
-    ctx.model.get("kanbanTasks"),
-    ctx.model.get("safeDiffProposals"),
-    ctx.editorController.getOpenFiles(),
-    ctx.editorController.getActiveFile()?.path ?? null,
-  );
-  if (ctx.model.get("kanbanOpen")) {
-    attachKanbanInteractions(ctx);
-  } else {
-    mountEditor(ctx);
-    ctx.model.set("safeDiffInteractionsAttached", false);
-    attachSafeDiffInteractions(ctx);
-  }
+  const el = document.querySelector<import("lit").LitElement>("ide-central-shell");
+  if (!el) return;
+  el.requestUpdate();
+  void el.updateComplete.then(() => {
+    if (ctx.model.get("kanbanOpen")) {
+      attachKanbanInteractions(ctx);
+    } else {
+      mountEditor(ctx);
+      ctx.model.set("safeDiffInteractionsAttached", false);
+      attachSafeDiffInteractions(ctx);
+    }
+  });
 }
 
 export function initializeKeyboardShortcuts(ctx: EventHandlerContext): void {
@@ -774,14 +760,10 @@ export function refreshKanban(ctx: EventHandlerContext): void {
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 export async function refreshMarketplaceOverlay(ctx: EventHandlerContext): Promise<void> {
-  const root = document.querySelector<HTMLElement>("#marketplace-root");
-  if (!root) return;
-
   const query = ctx.model.get("marketplaceSearchQuery");
   const filterTier = ctx.model.get("marketplaceFilterTier");
   const sort = ctx.model.get("marketplaceSort");
   const snapshot = ctx.model.get("marketplaceSnapshot");
-  const enterpriseSkills = ctx.model.get("enterpriseSkills");
 
   ctx.marketplaceSearchService.setFilter({
     tier: filterTier || undefined,
@@ -796,19 +778,10 @@ export async function refreshMarketplaceOverlay(ctx: EventHandlerContext): Promi
     searchResults = await ctx.marketplaceSearchService.search(items, query);
   }
 
-  root.innerHTML = renderMarketplaceOverlay(
-    ctx.model.get("marketplaceOpen"),
-    ctx.model.get("onboardingOpen"),
-    ctx.model.get("suggestedSkill"),
-    ctx.model.get("marketplaceTab"),
-    snapshot,
-    ctx.model.get("marketplaceDownloads"),
-    query,
-    enterpriseSkills,
-    searchResults,
-    filterTier,
-    sort,
-  );
+  const el = document.querySelector<HTMLElement & { searchResults: MarketplaceSearchResult[] | undefined }>("#marketplace-root ide-marketplace-overlay");
+  if (el) {
+    el.searchResults = searchResults;
+  }
 }
 
 export function refreshInstallationProgress(ctx: EventHandlerContext): void {
@@ -818,37 +791,26 @@ export function refreshInstallationProgress(ctx: EventHandlerContext): void {
   }
 }
 
-export function refreshAuditOverlay(ctx: EventHandlerContext): void {
-  const root = document.querySelector<HTMLElement>("#audit-root");
-  if (root) {
-    root.innerHTML = renderAuditOverlay(
-      ctx.model.get("auditOpen"),
-      ctx.model.get("currentSession"),
-      ctx.model.get("auditSnapshot"),
-    );
-  }
+export function refreshAuditOverlay(_ctx: EventHandlerContext): void {
+  // Handled by ide-audit-overlay Lit component via model subscription
 }
 
 export function refreshSettingsOverlay(ctx: EventHandlerContext): void {
-  const root = document.querySelector<HTMLElement>("#settings-root");
-  if (root) {
-    root.innerHTML = renderSettingsOverlay(
-      ctx.model.get("settingsOpen"),
-      ctx.model.get("currentSession"),
-      ctx.sessionUsageService.getSnapshot(),
-      ctx.model.get("updateStatus"),
-      ctx.model.get("byokKeys"),
-      renderMcpSettingsRows(ctx.mcpRegistry.list()),
-      renderIdeLanguageSwitcher(getCurrentLanguage()),
-    );
+  const el = document.querySelector<HTMLElement & { open: boolean; plan: string; updateStatus: string; byokKeys: Record<string, string | undefined>; usage: import("../billing/session-usage.service").SessionUsageSnapshot; mcpSettingsHtml: string; languageSwitcherHtml: string }>("#settings-root ide-settings-overlay");
+  if (el) {
+    const session = ctx.model.get("currentSession");
+    el.open = ctx.model.get("settingsOpen");
+    el.plan = session?.user?.plan ?? "Free";
+    el.updateStatus = ctx.model.get("updateStatus");
+    el.byokKeys = ctx.model.get("byokKeys");
+    el.usage = ctx.sessionUsageService.getSnapshot();
+    el.mcpSettingsHtml = renderMcpSettingsRows(ctx.mcpRegistry.list());
+    el.languageSwitcherHtml = renderIdeLanguageSwitcher(getCurrentLanguage());
   }
 }
 
-export function refreshUpgradeModal(ctx: EventHandlerContext): void {
-  const root = document.querySelector<HTMLElement>("#upgrade-root");
-  if (root) {
-    root.innerHTML = renderUpgradeModal(ctx.model.get("upgradeModalFeature"));
-  }
+export function refreshUpgradeModal(_ctx: EventHandlerContext): void {
+  // Handled by ide-upgrade-modal Lit component via model subscription
 }
 
 export function refreshEntitlementControls(ctx: EventHandlerContext): void {
@@ -1922,19 +1884,7 @@ function executeSuggestedCommand(ctx: EventHandlerContext, cmd: string): void {
 
 function openAgentConfig(ctx: EventHandlerContext): void {
   ctx.model.set("settingsOpen", true);
-  const { renderSettingsOverlay } = require("./ui-renderers");
-  const root = document.querySelector("#settings-root");
-  if (root) {
-    root.innerHTML = renderSettingsOverlay(
-      true,
-      ctx.model.get("currentSession"),
-      ctx.sessionUsageService.getSnapshot(),
-      ctx.model.get("updateStatus"),
-      ctx.model.get("byokKeys"),
-      ctx.model.get("enterpriseManageError"),
-      ctx.model.get("enterpriseManageSubmitting") ? "submitting" : "",
-    );
-  }
+  refreshSettingsOverlay(ctx);
   setTimeout(() => {
     const agentTab = document.querySelector<HTMLButtonElement>("button[data-settings-tab='agents']");
     agentTab?.click();
@@ -2612,17 +2562,8 @@ export async function handleNativeAuthSubmit(ctx: EventHandlerContext, form: HTM
   }
 }
 
-export function refreshAuthOverlay(ctx: EventHandlerContext): void {
-  const root = document.querySelector<HTMLElement>("#auth-root");
-  if (root) {
-    root.innerHTML = renderAuthOverlay(
-      ctx.model.get("authMode"),
-      ctx.model.get("authError"),
-      ctx.model.get("authSubmitting"),
-      ctx.model.get("authSSOMode"),
-      ctx.model.get("authSSOError"),
-    );
-  }
+export function refreshAuthOverlay(_ctx: EventHandlerContext): void {
+  // Handled by ide-auth-overlay Lit component via model subscription
 }
 
 export function renderSession(ctx: EventHandlerContext, session: OclushionSession | null): void {

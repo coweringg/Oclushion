@@ -71,34 +71,6 @@ export async function mountLazyControllers(ctx: EventHandlerContext): Promise<vo
       const palette = new CommandPaletteController(ctx.voiceCapture, ctx.intentRouter, ctx.fileSearchService);
       palette.mount(document.body);
     }),
-    import("../ui/os-tabs.controller").then(({ OsTabsController }) => {
-      const osTabs = new OsTabsController({ root: document } as never, ctx.editorController, ctx.canvasService);
-      osTabs.mount();
-    }),
-    import("../ui/agi-switch.controller").then(({ AgiSwitchController }) => {
-      const agiSwitch = new AgiSwitchController({ root: document } as never, ctx.agentOrchestrator);
-      agiSwitch.mount();
-    }),
-    import("../ui/menubar.controller").then(({ MenubarController }) => {
-      const menubar = new MenubarController({ root: document } as never);
-      menubar.mount();
-    }),
-    import("../ui/status-bar.controller").then(({ StatusBarController }) => {
-      const statusBar = new StatusBarController({ root: document } as never);
-      statusBar.mount();
-    }),
-    import("../ui/activity-bar.controller").then(({ ActivityBarController }) => {
-      const activityBar = new ActivityBarController({ root: document } as never);
-      activityBar.mount();
-    }),
-    import("../ui/context-menu.controller").then(({ ContextMenuController }) => {
-      const contextMenu = new ContextMenuController({ root: document } as never);
-      contextMenu.mount();
-    }),
-    import("../ui/time-travel.controller").then(({ TimeTravelController }) => {
-      const timeTravel = new TimeTravelController({ root: document } as never, ctx.agentOrchestrator);
-      timeTravel.mount();
-    }),
     import("../memory/hive-memory.service").then(({ HiveMemoryService }) => {
       const hiveMemory = new HiveMemoryService();
       return import("../ui/hive-suggestions.controller").then(({ HiveSuggestionsController }) => {
@@ -112,32 +84,6 @@ export async function mountLazyControllers(ctx: EventHandlerContext): Promise<vo
         const finOpsController = new FinOpsController({ root: document } as never, finOpsService, ctx.agentOrchestrator);
         finOpsController.mount();
       });
-    }),
-    import("../ui/agent-swarm.controller").then(({ AgentSwarmController }) => {
-      const swarm = new AgentSwarmController(ctx.agentOrchestrator);
-      swarm.mount("agent-swarm-root");
-    }),
-    import("../ui/repo-intelligence.controller").then(({ RepoIntelligenceController }) => {
-      const repoIntel = new RepoIntelligenceController();
-      repoIntel.mount("repo-intelligence-root");
-    }),
-    import("../ui/renderers/canvas-spatial.renderer").then(({ SpatialCanvasRenderer }) => {
-      const spatialRenderer = new SpatialCanvasRenderer(
-        ctx.canvasService,
-        ctx.spatialLayoutService,
-      );
-      const container = document.getElementById("spatial-canvas-root");
-      if (container) {
-        spatialRenderer.render(container);
-      }
-    }),
-    import("../agents/assistant-hub.controller").then(({ AssistantHubController }) => {
-      const hub = new AssistantHubController(
-        { root: document } as never,
-        ctx.secureKeysService,
-        ctx.modelRouter,
-      );
-      hub.mountTo("assistant-hub-root");
     }),
   ];
 

@@ -3,7 +3,6 @@
 @import "./styles/reset.css";
 @import "./styles/splash.css";
 @import "./styles/base.css";
-@import "./styles/layout.css";
 @import "./styles/marketplace.css";
 @import "./styles/chat.css";
 @import "./styles/chat-sidebar.css";
@@ -14,7 +13,6 @@
 @import "./styles/empty-state.css";
 @import "./styles/auth-redesign.css";
 @import "./styles/sidebar-redesign.css";
-@import "./styles/assistant-hub.css";
 @import "./styles/auto-approve.css";
 @import "./styles/canvas-spatial.css";
 @import "./styles/command-palette.css";
